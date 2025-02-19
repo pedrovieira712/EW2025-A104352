@@ -116,11 +116,9 @@ http.createServer((req, res) => {
                         .then(resp => {
                             let alunosData = resp.data;
                 
-                            // Primeiro, tenta obter pelo ID
                             return axios.get(`http://localhost:3000/instrumentos/${idOuNome}`)
                                 .then(instrResp => ({ instrumento: instrResp.data, alunos: alunosData }))
                                 .catch(() => {
-                                    // Se falhar, tenta obter pelo nome (#text)
                                     return axios.get(`http://localhost:3000/instrumentos?%23text=${encodeURIComponent(idOuNome)}`)
                                         .then(instrResp => {
                                             let instrumentosData = instrResp.data;
@@ -134,7 +132,6 @@ http.createServer((req, res) => {
                                 });
                         })
                         .then(({ instrumento, alunos }) => {
-                            // Filtrar alunos que tocam esse instrumento
                             let alunosQueTocam = alunos.filter(a => a.instrumento === instrumento["#text"]);
                 
                             res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
