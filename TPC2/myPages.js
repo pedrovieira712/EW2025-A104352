@@ -69,4 +69,263 @@ export function gerarPaginaPrincipal(alunos, cursos, instrumentos, d) {
                         <a href="/instrumentos/${instrumento.id}" class="list-group-item">
                             ${instrumento["#text"]}
                         </a>
-              
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+    </div>
+    `;
+    return gerarHtmlBase("Página Principal", content, d);
+}
+
+
+export function gerarPaginaIndividual(aluno, d) {
+    const content = `
+    <div class="container">
+        <h1 class="text-center my-4">${aluno.nome}</h1>
+        
+        <table class="table table-bordered table-striped table-hover">
+            <tbody>
+                <tr>
+                    <th>ID</th>
+                    <td>${aluno.id}</td>
+                </tr>
+                <tr>
+                    <th>Nome</th>
+                    <td>${aluno.nome}</td>
+                </tr>
+                <tr>
+                    <th>Data de Nascimento</th>
+                    <td>${aluno.dataNasc}</td>
+                </tr>
+                <tr>
+                    <th>Curso</th>
+                    <td><a href="/cursos/${aluno.curso}">${aluno.curso}</a></td>
+                </tr>
+                <tr>
+                    <th>Ano do Curso</th>
+                    <td>${aluno.anoCurso}º Ano</td>
+                </tr>
+                <tr>
+                    <th>Instrumento</th>
+                    <td><a href="/instrumentos/${aluno.instrumento}">${aluno.instrumento}</a></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="text-center mt-4">
+            <a href="/" class="btn btn-primary">Voltar</a>
+        </div>
+    </div>
+    `;
+    
+    return gerarHtmlBase(`Aluno ${aluno.nome}`, content, d);
+}
+
+
+export function gerarPaginaIndividualCurso(curso, alunos, d) {
+    const alunosList = alunos.length > 0 ? `
+    <table class="table table-bordered table-striped table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${alunos.map(aluno => `
+                <tr onclick="window.location.href='/alunos/${aluno.id}'" style="cursor: pointer;">
+                    <td>${aluno.id}</td>
+                    <td>${aluno.nome}</td>
+                </tr>
+            `).join('')}
+        </tbody>
+    </table>
+` : '<p>Nenhum aluno utiliza este instrumento.</p>';
+
+    const content = `
+    <div class="container">
+        <h1 class="text-center my-4">${curso.designacao}</h1>
+
+        <table class="table table-bordered table-striped">
+            <tbody>
+                <tr>
+                    <th>ID</th>
+                    <td>${curso.id}</td>
+                </tr>
+                <tr>
+                    <th>Designação</th>
+                    <td>${curso.designacao}</td>
+                </tr>
+                <tr>
+                    <th>Duração</th>
+                    <td>${curso.duracao} anos</td>
+                </tr>
+                <tr>
+                    <th>Instrumento</th>
+                    <td>
+                        <a href="/instrumentos/${curso.instrumento.id}">${curso.instrumento["#text"]}</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2 class="mt-4">Alunos Inscritos</h2>
+        <div class="list-group">
+             ${alunosList}
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="/" class="btn btn-primary">Voltar</a>
+        </div>
+    </div>
+    `;
+    
+    return gerarHtmlBase(`Curso ${curso.designacao}`, content, d);
+}
+
+export function gerarPaginaIndividualInstrumento(instrumento, alunos, d) {
+    const alunosList = alunos.length > 0 ? `
+        <table class="table table-bordered table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${alunos.map(aluno => `
+                    <tr onclick="window.location.href='/alunos/${aluno.id}'" style="cursor: pointer;">
+                        <td>${aluno.id}</td>
+                        <td>${aluno.nome}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    ` : '<p>Nenhum aluno utiliza este instrumento.</p>';
+
+    const content = `
+    <div class="container">
+        <h1 class="text-center my-4">Instrumento: ${instrumento["#text"]}</h1>
+
+        <table class="table table-bordered table-striped">
+            <tbody>
+                <tr>
+                    <th>ID</th>
+                    <td>${instrumento.id}</td>
+                </tr>
+                <tr>
+                    <th>Nome</th>
+                    <td>${instrumento["#text"]}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2 class="mt-4">Alunos que utilizam este instrumento</h2>
+        ${alunosList}
+
+        <div class="text-center mt-4">
+            <a href="/" class="btn btn-primary">Voltar</a>
+        </div>
+    </div>
+    `;
+    
+    return gerarHtmlBase(`Instrumento ${instrumento["#text"]}`, content, d);
+}
+
+
+export function gerarPaginaAlunos(alunos, d) {
+    const content = `
+    <div class="container">
+        <h1 class="text-center my-4">Lista de Alunos</h1>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Data de Nascimento</th>
+                    <th>Curso</th>
+                    <th>Ano do Curso</th>
+                    <th>Instrumento</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${alunos.map(aluno => `
+                    <tr onclick="window.location.href='/alunos/${aluno.id}'" style="cursor: pointer;">
+                        <td>${aluno.id}</td>
+                        <td>${aluno.nome}</td>
+                        <td>${aluno.dataNasc}</td>
+                        <td><a href="/cursos/${aluno.curso}">${aluno.curso}</a></td>
+                        <td>${aluno.anoCurso}º Ano</td>
+                        <td><a href="/instrumentos/${aluno.instrumento}">${aluno.instrumento}</a></td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+        <div class="text-center mt-4">
+            <a href="/" class="btn btn-primary">Voltar</a>
+        </div>
+    </div>
+    `;
+    return gerarHtmlBase("Lista de Alunos", content, d);
+}
+
+export function gerarPaginaCursos(cursos, d) {
+    const content = `
+    <div class="container">
+        <h1 class="text-center my-4">Lista de Cursos</h1>
+        <table class="table table-bordered table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Designação</th>
+                    <th>Duração</th>
+                    <th>Instrumento</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${cursos.map(curso => `
+                    <tr onclick="window.location.href='/cursos/${curso.id}'" style="cursor: pointer;">
+                        <td>${curso.id}</td>
+                        <td>${curso.designacao}</td>
+                        <td>${curso.duracao} anos</td>
+                        <td><a href="/instrumentos/${curso.instrumento.id}">${curso.instrumento["#text"]}</a></td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+        <div class="text-center mt-4">
+            <a href="/" class="btn btn-primary">Voltar</a>
+        </div>
+    </div>
+    `;
+    return gerarHtmlBase("Lista de Cursos", content, d);
+}
+
+export function gerarPaginaInstrumentos(instrumentos, d) {
+    const content = `
+    <div class="container">
+        <h1 class="text-center my-4">Lista de Instrumentos</h1>
+        <table class="table table-bordered table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${instrumentos.map(instrumento => `
+                    <tr onclick="window.location.href='/instrumentos/${instrumento.id}'" style="cursor: pointer;">
+                        <td>${instrumento.id}</td>
+                        <td>${instrumento["#text"]}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+        <div class="text-center mt-4">
+            <a href="/" class="btn btn-primary">Voltar</a>
+        </div>
+    </div>
+    `;
+    return gerarHtmlBase("Lista de Instrumentos", content, d);
+}

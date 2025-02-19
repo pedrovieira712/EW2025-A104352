@@ -146,4 +146,40 @@ http.createServer((req, res) => {
                             res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
                             res.write('<h1>Instrumento não encontrado</h1>');
                             res.end();
-                   
+                        });
+            } else if(req.url.match(/favicon\.ico$/)) {
+                fl.readFile("logo.ico", function(erro, dados){
+                    if(erro){
+                        res.writeHead(404, {'Content-Type': 'text/html; charset=utf-8'})
+                        res.end('<p>Erro na leitura do ficheiro: ' + erro + '</p>')
+                    } else {
+                        res.writeHead(200, { 'Content-Type': 'image/x-icon' });
+                        res.end(dados)
+                    }
+                })
+            } else if(req.url.match(/bootstrap\.min\.css$/)) {
+                fl.readFile("bootstrap.min.css", function(erro, dados){
+                    if(erro){
+                        res.writeHead(404, {'Content-Type': 'text/html; charset=utf-8'})
+                        res.end('<p>Erro na leitura do ficheiro: ' + erro + '</p>')
+                    } else {
+                        res.writeHead(200, {'Content-Type': 'text/css'})
+                        res.end(dados)
+                    }
+                })
+            } else {
+                res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+                res.write('<h1>404 - Página não encontrada</h1>');
+                res.end();
+            }
+            break;
+        
+        default:
+            res.writeHead(405, { 'Content-Type': 'text/html; charset=utf-8' });
+            res.write('<h1>405 - Método não permitido</h1>');
+            res.end();
+            break;
+    }
+}).listen(4321);
+
+console.log("Servidor a correr em http://localhost:4321");
