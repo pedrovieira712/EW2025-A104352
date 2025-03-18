@@ -1,0 +1,20 @@
+extends layout
+
+block content
+  .card.shadow-lg.mt-4
+    header.card-header.bg-primary.text-white.text-center
+      h1= autor
+    .card-body
+      .container.p-4
+        table.table.table-striped
+          thead
+            tr
+              th Ano
+              th Título
+          tbody
+            each f in filmes
+              tr
+                td= f.year
+                td= f.title
+      
+        a(href=`/filmes`).btn.btn-info Voltar

@@ -1,0 +1,29 @@
+extends layout
+
+block content
+  .container.mt-5
+    .card.shadow
+      .card-header.bg-primary.text-white.text-center
+        h1 Editar Filme
+      .card-body
+        form(action=`/filmes/update/${filme.id}`, method="POST")
+          .mb-3
+            label.form-label(for="title") Título:
+            input.form-control(type="text", id="title", name="title", value=filme.title, required)
+          
+          .mb-3
+            label.form-label(for="year") Ano:
+            input.form-control(type="number", id="year", name="year", value=filme.year, required)
+          
+          .mb-3
+            label.form-label(for="cast") Elenco (separado por vírgulas):
+            input.form-control(type="text", id="cast", name="cast", value=filme.cast.join(', '), required)
+          
+          .mb-3
+            label.form-label(for="genres") Géneros (separado por vírgulas):
+            input.form-control(type="text", id="genres", name="genres", value=filme.genres.join(', '), required)
+          
+          .d-flex.gap-3
+            button.btn.btn-info(type="submit") Atualizar Filme
+            a.btn.btn-secondary(href="/filmes") Cancelar
+      

@@ -1,0 +1,34 @@
+
+extends layout
+
+block content
+  .card.card-custom
+    .card-header.bg-primary.text-white.text-center
+      h1= tit
+
+    .card-body
+      table.table.table-striped.table-hover
+        thead
+          tr
+            th Ano
+            th Título
+            th Elenco
+            th Géneros
+            th Opções
+        tbody
+          each f in lfilmes
+            tr
+              td= f.year
+              td= f.title
+              td
+                ul.list-unstyled
+                  each ator in f.cast
+                    li
+                      a(href=`/filmes/autor/${ator}`)= ator
+              td
+                ul.list-unstyled
+                  each g in f.genres
+                    li= g
+              td
+                a(href=`/filmes/edit/${f.id}`).btn.btn-custom.btn-primary.mb-1 Editar
+                a(href=`/filmes/delete/${f.id}`).btn.btn-custom.btn-primary Eliminar

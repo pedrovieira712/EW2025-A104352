@@ -1,0 +1,21 @@
+extends layout
+
+block content
+  h1= title
+
+  .row
+    .col-md-10.offset-md-1
+      .card
+        .card-header 
+          h2.card-title Dados da UC
+        
+        .card-body
+          ul.list-group
+            li.list-group-item Docente: #{docente}
+            li.list-group-item Instituição: #{instituicao}
+            
+      h2.mt-4 App TPC4
+
+      ul.list-group
+        li.list-group-item
+          a(href='/filmes') Lista de Filmes
