@@ -1,0 +1,30 @@
+extends layout
+
+block content
+  .container.mt-5
+    .card
+      .card-header.bg-teal.text-white.text-center
+        h1
+          b Perfil do Aluno
+      .card-body
+        ul.list-group.list-group-flush
+          li.list-group-item
+            b Nome:
+            |  #{aluno.nome}
+          li.list-group-item
+            b Número:
+            |  #{aluno._id}
+          li.list-group-item
+            b GitHub:
+            a.text-primary(href=aluno.git target="_blank") #{aluno.git}
+      .card-body
+        h3.text-teal
+          b Trabalhos de Casa
+        .row
+          - const tpcKeys = Object.keys(aluno).filter(key => key.startsWith('tpc') && aluno[key] === "1");
+          if tpcKeys.length
+            .col
+              each key in tpcKeys
+                span.badge.badge-success.mr-2 #{key.toUpperCase()}
+          else
+            p.text-danger Nenhum TPC concluído.

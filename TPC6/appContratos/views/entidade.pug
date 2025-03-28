@@ -1,0 +1,63 @@
+extends layout
+
+block content
+  - const nipc = contratos.length > 0 ? contratos[0].NIPC_entidade_comunicante : 'N/A'
+  - const nomeEntidade = contratos.length > 0 ? contratos[0].entidade_comunicante : 'Entidade Desconhecida'
+  - const totalContratos = contratos.reduce((sum, c) => sum + c.precoContratual, 0)
+
+  header.bg-indigo.p-4
+    .container
+      .row
+        .col-12.text-center
+            h1
+            i.fas.fa-building.mr-2
+            | #{nomeEntidade}
+        .col-12.text-center
+            p
+            i.fas.fa-id-card.mr-2
+            | NIPC: #{nipc}
+            p
+            i.fas.fa-calendar-alt.mr-2
+            = new Date().toLocaleDateString('pt-PT')
+
+    .card-body
+        .row
+          .col-md-6
+            h3
+              i.fas.fa-file-alt.mr-2
+              | Total de Contratos: #{contratos.length}
+          .col-md-6.text-right
+            h3
+              i.fas.fa-euro-sign.mr-2
+              | #{totalContratos.toLocaleString('pt-PT')} €
+
+    if contratos && contratos.length > 0
+      .table-responsive
+        table.table.table-striped.table-bordered.table-hover
+          thead
+            tr.bg-purple.text-white
+              th ID Contrato
+              th Objeto
+              th Data
+              th Preço
+              th NIPC
+              th Entidade
+          tbody
+            each contrato in contratos
+              tr.bg-light
+                td
+                  a.text-indigo(href=`/${contrato._id}`)= contrato._id
+                td= contrato.objectoContrato
+                td.text-dark= contrato.dataCelebracaoContrato
+                td.text-success= contrato.precoContratual + ' €'
+                td
+                  a.text-indigo(href=`/entidades/${contrato.NIPC_entidade_comunicante}`)= contrato.NIPC_entidade_comunicante
+                td.text-dark= contrato.entidade_comunicante
+    else
+      .alert.alert-warning
+        h3.text-warning
+          i.fas.fa-exclamation-triangle.mr-2
+          | Aviso!
+        p Nenhum contrato encontrado na base de dados.
+        a.btn.btn-warning.rounded(href="/") Voltar à página inicial
+

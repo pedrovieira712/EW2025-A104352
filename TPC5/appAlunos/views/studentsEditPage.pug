@@ -1,0 +1,59 @@
+extends layout
+
+block content
+  .container.mt-5
+    .card
+      .card-header.bg-purple.text-white
+        h2 Editar Estudante
+      form#editarEstudante.card-body(method="POST")
+        fieldset.mb-3
+          legend.text-purple
+            b Informações do Estudante
+          .form-group
+            label
+              b ID
+            input.form-control(type="text" name="id" value=a._id readonly)
+          .form-group
+            label
+              b Nome
+            input.form-control(type="text" name="nome" value=a.nome required)
+          .form-group
+            label
+              b GitHub
+            input.form-control(type="text" name="git" value=a.git required)
+        fieldset.mb-3
+          legend.text-purple
+            b Trabalhos de Casa (TPCs)
+          .row
+            .col-md-6
+              - for (let i = 1; i <= 4; i++)
+                - let tpc = "tpc" + i
+                .form-check
+                  input.form-check-input(type="checkbox" name=`tpc${i}` value="1" checked=a[tpc] === "1")
+                  label.form-check-label TPC#{i}
+            .col-md-6
+              - for (let i = 5; i <= 8; i++)
+                - let tpc = "tpc" + i
+                .form-check
+                  input.form-check-input(type="checkbox" name=`tpc${i}` value="1" checked=a[tpc] === "1")
+                  label.form-check-label TPC#{i}
+        .text-center
+          button.btn.btn-purple.btn-lg.mt-3(type="submit") Guardar Alterações
+
+  script.
+    document.getElementById('editarEstudante').addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      for (let i = 1; i <= 8; i++) {
+        const checkbox = document.querySelector(`input[name="tpc${i}"]`);
+        if (!checkbox.checked) {
+          const hiddenInput = document.createElement('input');
+          hiddenInput.type = 'hidden';
+          hiddenInput.name = `tpc${i}`;
+          hiddenInput.value = '0';
+          this.appendChild(hiddenInput);
+        }
+      }
+
+      this.submit();
+    });

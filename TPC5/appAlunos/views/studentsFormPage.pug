@@ -1,0 +1,53 @@
+extends layout
+
+block content
+  .container.mt-5
+    .card
+      .card-header.bg-purple.text-white
+        h2 Formulário de Estudante
+      form.card-body(method="POST")
+        fieldset.mb-3
+          legend.text-purple
+            b Informações do Estudante
+          .form-group
+            label
+              b ID
+            input.form-control(type="text" name="id" required)
+          .form-group
+            label
+              b Nome
+            input.form-control(type="text" name="nome" required)
+          .form-group
+            label
+              b GitHub
+            input.form-control(type="text" name="git" required)
+        fieldset.mb-3
+          legend.text-purple
+            b Trabalhos de Casa (TPCs)
+          .row
+            .col-md-6
+              input.form-check-input(type="checkbox" name="tpc1" value="1")
+              label.form-check-label TPC1
+              br
+              input.form-check-input(type="checkbox" name="tpc2" value="1")
+              label.form-check-label TPC2
+              br
+              input.form-check-input(type="checkbox" name="tpc3" value="1")
+              label.form-check-label TPC3
+              br
+              input.form-check-input(type="checkbox" name="tpc4" value="1")
+              label.form-check-label TPC4
+            .col-md-6
+              input.form-check-input(type="checkbox" name="tpc5" value="1")
+              label.form-check-label TPC5
+              br
+              input.form-check-input(type="checkbox" name="tpc6" value="1")
+              label.form-check-label TPC6
+              br
+              input.form-check-input(type="checkbox" name="tpc7" value="1")
+              label.form-check-label TPC7
+              br
+              input.form-check-input(type="checkbox" name="tpc8" value="1")
+              label.form-check-label TPC8
+        .text-center
+          button.btn.btn-purple.btn-lg.mt-3(type="submit") Registar

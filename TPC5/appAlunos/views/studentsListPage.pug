@@ -1,0 +1,31 @@
+extends layout
+
+block content
+  .card
+    .card-header.bg-teal.text-white
+      h1
+        span Students List
+        a.btn.btn-round.btn-light.ml-4(href='/alunos/registo') +
+        
+    .card-body
+      table.table.table-bordered
+        thead
+          tr
+            th ID
+            th Nome
+            th GitHub
+            th Ações
+        tbody
+          each aluno in slist
+            tr
+              td= aluno._id
+              td
+                a(href="/alunos/" + aluno._id)= aluno.nome
+              td= aluno.git
+              td
+                span
+                  a.btn.btn-sm.btn-primary(href="/alunos/edit/" + aluno._id) Edit
+                span
+                span
+                  a.btn.btn-sm.btn-danger(href="/alunos/delete/" + aluno._id) Delete
+                span

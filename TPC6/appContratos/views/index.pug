@@ -1,0 +1,51 @@
+extends layout
+
+block content
+  header.bg-indigo.p-4
+    .container
+      .row
+        .col-12.text-center
+          h1
+            i.fas.fa-file-contract.mr-2
+            | Contratos
+      .row.mt-3
+        .col-12.text-center
+          p
+            i.fas.fa-calendar-alt.mr-2
+            = new Date().toLocaleDateString('pt-PT')
+      .row.mt-3
+        .col-12.text-center
+          p
+            i.fas.fa-list-ol.mr-2
+            | Total de Contratos: #{contratos ? contratos.length : 0}
+  .container.mt-4
+    if contratos && contratos.length > 0
+      .table-responsive
+        table.table.table-striped.table-bordered.table-hover.table-card
+          thead
+            tr.bg-deep-purple
+              th ID Contrato
+              th Objeto
+              th Data
+              th Preço
+              th NIPC
+              th Entidade
+          tbody
+            each contrato in contratos
+              tr.bg-light
+                td
+                  a.text-indigo(href=`/${contrato._id}`)= contrato._id
+                td= contrato.objectoContrato
+                td.text-dark= contrato.dataCelebracaoContrato
+                td.text-success= contrato.precoContratual + ' €'
+                td
+                  a.text-indigo(href=`/entidades/${contrato.NIPC_entidade_comunicante}`)= contrato.NIPC_entidade_comunicante
+                td.text-dark= contrato.entidade_comunicante
+    else
+      .alert.alert-warning
+        h3.text-warning
+          i.fas.fa-exclamation-triangle.mr-2
+          | Aviso!
+        p Nenhum contrato encontrado na base de dados.
+
+

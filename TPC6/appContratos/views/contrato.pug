@@ -1,0 +1,103 @@
+extends layout
+
+block content
+  header.bg-indigo
+    .row
+      .col-6.text-center
+        h1
+          i.fas.fa-file-contract.mr-2
+          | Detalhes do Contrato
+      .col-6.text-right
+        p
+          i.fas.fa-calendar-alt.mr-2
+          = new Date().toLocaleDateString('pt-PT')
+
+  .container.mt-4
+    .card.mb-4
+      .card-header.bg-deep-purple
+        h2
+          i.fas.fa-info-circle.mr-2
+          | Informação Básica
+      .card-body
+        .row
+          .col-md-6
+            p
+              strong.text-indigo
+                i.fas.fa-fingerprint.mr-2
+                | ID Contrato: 
+              span= contrato._id
+            p
+              strong.text-indigo
+                i.fas.fa-bullhorn.mr-2
+                | Número Anúncio: 
+              span= contrato.nAnuncio || 'Não disponível'
+            p
+              strong.text-indigo
+                i.fas.fa-tasks.mr-2
+                | Tipo Procedimento: 
+              span= contrato.tipoprocedimento
+            p
+              strong.text-indigo
+                i.fas.fa-bullseye.mr-2
+                | Objeto do Contrato: 
+              span= contrato.objectoContrato
+          .col-md-6
+            p
+              strong.text-indigo
+                i.fas.fa-euro-sign.mr-2
+                | Preço Contratual: 
+              span.text-success= contrato.precoContratual + ' €'
+            p
+              strong.text-indigo
+                i.fas.fa-calendar-day.mr-2
+                | Prazo Execução: 
+              span= contrato.prazoExecucao + ' dias'
+
+    .card.mb-4
+      .card-header.bg-deep-purple
+        h2
+          i.fas.fa-calendar-week.mr-2
+          | Datas Importantes
+      .card-body
+        .row
+          .col-md-6
+            p
+              strong.text-indigo
+                i.fas.fa-newspaper.mr-2
+                | Data Publicação: 
+              span= contrato.dataPublicacao
+          .col-md-6
+            p
+              strong.text-indigo
+                i.fas.fa-handshake.mr-2
+                | Data Celebração: 
+              span= contrato.dataCelebracaoContrato
+
+    .card.mb-4
+      .card-header.bg-deep-purple
+        h2
+          i.fas.fa-building.mr-2
+          | Entidade Comunicante
+      .card-body
+        .row
+          .col-md-6
+            p
+              strong.text-indigo
+                i.fas.fa-id-card.mr-2
+                | NIPC: 
+              a.text-indigo(href=`/entidades/${contrato.NIPC_entidade_comunicante}`)= contrato.NIPC_entidade_comunicante
+          .col-md-6
+            p
+              strong.text-indigo
+                i.fas.fa-landmark.mr-2
+                | Nome: 
+              span= contrato.entidade_comunicante
+
+    .card.mb-4
+      .card-header.bg-deep-purple
+        h2
+          i.fas.fa-gavel.mr-2
+          | Fundamentação Legal
+      .card-body
+        p= contrato.fundamentacao
+
