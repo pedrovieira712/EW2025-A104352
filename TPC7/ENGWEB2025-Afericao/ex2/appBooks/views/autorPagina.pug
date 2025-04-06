@@ -1,0 +1,32 @@
+extends layout
+
+block content
+  h1.text-center.my-4 Livros de #{autor[0]._id} - #{autor[0].author[0]}
+
+  if autor.length > 0
+    .table-responsive
+      table.table.table-striped.table-bordered.table-hover
+        thead.bg-primary
+          tr
+            th Imagem
+            th Título
+            th Gêneros
+            th Avaliação
+            th Número de Ratings
+        tbody
+          each livro in autor
+            tr
+              td
+                img.img-fluid(style="max-width: 50px;")(src=livro.coverImg, alt=`Capa de ${livro.title}`)
+              td= livro.title
+              td= livro.genres.join(', ')   
+              td= livro.rating
+              td= livro.numRatings
+
+    p.text-center
+      strong Total de livros: #{autor.length}
+
+    div.text-center
+      a.btn.btn-primary(href='/') Voltar à página principal
+  else
+    p.text-center Não há livros para este autor.

@@ -1,0 +1,5 @@
+db.livros.countDocuments({ title: /Love/i })
+db.livros.find({ author: /Austen/i }).sort({ title: 1 }).projection({ title: 1 })
+db.books.distinct("authors").sort()
+db.livros.aggregate([{$unwind:"$genres"}, { $group: { _id:"$genres", count: {$sum:1 } } }])
+db.livros.find({ characters: "Sirius Black" }).sort({ title: 1 }).projection({ title: 1, isbn: 1 })

@@ -1,0 +1,49 @@
+extends layout
+
+block content
+  header.container.bg-primary.py-3
+    .row
+      .col-6
+        h1.text-white
+          i.fas.fa-book
+          | Catálogo de Livros
+      .col-6.text-end
+        p.text-white
+          i.fas.fa-calendar-alt(style="margin-right:5px")
+          = new Date().toLocaleDateString('pt-PT')
+        p.text-white
+          i.fas.fa-book-open(style="margin-right:5px")
+          | Total de Livros: #{livros && livros.length ? livros.length : 0}
+
+  .container.mt-4
+    if livros && livros.length > 0
+      .table-responsive
+        table.table.table-striped.table-bordered.table-hover
+          thead.bg-primary
+            tr
+              th ID
+              th Título
+              th Autor(es)
+              th Data Publicação
+              th Páginas
+          tbody
+            each livro in livros
+              tr
+                td
+                  a.text-primary(href=`/${livro._id}`)= livro._id
+                td= livro.title
+                td
+                  each autor, index in livro.author
+                    - const autorId = livro.authorIds && livro.authorIds[index] ? livro.authorIds[index] : encodeURIComponent(autor)
+                    a.text-primary(href=`/entidades/${autorId}`)= autor
+                    if index < livro.author.length - 1
+                      | , 
+                td.text-dark= livro.publishDate
+                td.text-success= livro.pages
+    else
+      .alert.alert-warning
+        h3.text-warning 
+          i.fas.fa-exclamation-triangle(style="margin-right:10px")
+          | Aviso!
+        p Nenhum livro encontrado na base de dados.
+        a.btn.btn-warning.rounded(href="/") Voltar à página inicial

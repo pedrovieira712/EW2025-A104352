@@ -1,0 +1,77 @@
+extends layout
+
+block content
+  header.container.bg-primary.py-3
+    .row
+      .col-10
+        h1.text-white 
+          i.fas.fa-book(style="margin-right:10px")
+          | #{livro.title}
+      .col-2.text-end
+        a.btn.btn-outline-light.rounded(href="/") 
+          i.fas.fa-home(style="margin-right:5px")
+          | Voltar
+
+  .container.mt-4
+    .row
+      // Se o livro tiver uma imagem de capa
+      if livro.coverImg
+        .col-md-4
+          .card.p-3(style="width:90%")
+            img.img-fluid(src=livro.coverImg, alt=`Capa de ${livro.title}`)
+            if livro.price
+              .card-body.text-center.mt-3
+                span.badge.bg-success.rounded-pill Preço: #{livro.price.toFixed(2)} €
+
+      .col-md-8
+        .card.p-3
+          table.table.table-bordered.table-hover
+            tr
+              th.bg-primary.text-white ID
+              td= livro._id
+            tr
+              th.bg-primary.text-white Série
+              td= livro.series || '-'
+            tr
+              th.bg-primary.text-white Autor(es)
+              td
+                each autor, index in livro.author
+                  - const autorId = livro.authorIds && livro.authorIds[index] ? livro.authorIds[index] : encodeURIComponent(autor)
+                  a.text-primary(href=`/entidades/${autorId}`)= autor
+                  if index < livro.author.length - 1
+                    | , 
+            tr
+              th.bg-primary.text-white Classificação
+              td
+                - const rating = livro.rating || 0
+                .progress
+                  .progress-bar.progress-bar-striped.progress-bar-animated(class=`bg-${rating >= 4 ? 'success' : rating >= 3 ? 'warning' : 'danger'}` style=`width:${(rating/5)*100}%`) #{rating.toFixed(1)}
+            tr
+              th.bg-primary.text-white Descrição
+              td= livro.description || '-'
+            tr
+              th.bg-primary.text-white Gêneros
+              td= livro.genres ? livro.genres.join(', ') : '-'
+            tr
+              th.bg-primary.text-white Idioma
+              td= livro.language || '-'
+            tr
+              th.bg-primary.text-white ISBN
+              td= livro.isbn || '-'
+            tr
+              th.bg-primary.text-white Formato
+              td= livro.bookFormat || '-'
+            tr
+              th.bg-primary.text-white Editora
+              td= livro.publisher || '-'
+            tr
+              th.bg-primary.text-white Data Publicação
+              td= livro.publishDate || '-'
+            tr
+              th.bg-primary.text-white Páginas
+              td= livro.pages || '-'
+            // Exibir prêmios apenas se houver
+            if livro.awards && livro.awards.length > 0
+              tr
+                th.bg-primary.text-white Prêmios
+                td= livro.awards.join(', ')
