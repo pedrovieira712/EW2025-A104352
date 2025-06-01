@@ -1,0 +1,84 @@
+extends ../layout
+
+block content
+  .d-flex.justify-content-between.align-items-center.mb-4
+    h1 
+      | Conteúdos
+    if user
+      a.btn.btn-success(href='/sip/upload')   
+        | Upload SIP
+
+  // Cards de estatísticas - só para utilizadores logados
+  if user
+    .row.mb-4
+      .col-md-4
+        .card.text-center.bg-primary.text-white
+          .card-body
+            h2= items ? items.length : 0
+            p.mb-0 Total Items
+      .col-md-4
+        .card.text-center.bg-success.text-white
+          .card-body
+            h2= items ? items.filter(i => i.isPublic).length : 0
+            p.mb-0 Públicos
+      .col-md-4
+        .card.text-center.bg-warning.text-white
+          .card-body
+            h2= items ? items.filter(i => !i.isPublic && (i.submitter._id === user.id || user.isAdmin)).length : 0
+            p.mb-0 Meus Privados
+
+  // Lista de conteúdos
+  if items && items.length > 0
+    .row
+      each item in items
+        // Mostrar apenas públicos para não logados, todos para logados
+        if item.isPublic || (user && (item.submitter._id === user.id || user.isAdmin))
+          .col-md-6.col-lg-4.mb-4
+            .card.h-100
+              .card-header.d-flex.justify-content-between.align-items-center
+                h6.mb-0= item.title
+                .d-flex.align-items-center
+                  span.badge(class=item.type === 'zip' ? 'bg-info' : 'bg-secondary').me-2= item.type
+                  if !item.isPublic
+                    span.badge.bg-warning Privado
+              
+              .card-body
+                if item.description
+                  p.card-text= item.description.length > 80 ? item.description.substring(0, 80) + '...' : item.description
+                else
+                  p.text-muted.card-text Sem descrição
+                
+                .row.small.text-muted.mb-2
+                  .col-6
+                    i.bi.bi-person.me-1
+                    = item.producer
+                  .col-6
+                    i.bi.bi-calendar.me-1
+                    = new Date(item.createdAt).toLocaleDateString('pt-PT')
+                
+                if item.category
+                  .mb-2
+                    i.bi.bi-folder.me-1
+                    span.badge.bg-light.text-dark= item.category.name
+              
+              .card-footer.bg-transparent
+                .d-flex.justify-content-between.align-items-center
+                  small.text-muted= item.submitter.name
+                  .btn-group.btn-group-sm
+                    a.btn.btn-outline-primary(href=`/items/${item._id}`) Ver
+                    if user && (user.id === item.submitter._id || user.isAdmin)
+                      a.btn.btn-outline-secondary(href=`/items/edit/${item._id}`) Editar
+                    if item.type === 'zip'
+                      a.btn.btn-outline-success(href=`/sip/export/${item._id}`, download) 
+                        i.bi.bi-download
+  else
+    .alert.alert-info.text-center.py-5
+      i.bi.bi-inbox.display-1.text-muted.mb-3
+      if user
+        h4 Ainda não tem conteúdos
+        p Comece por fazer upload de um SIP
+        a.btn.btn-success(href='/sip/upload') Primeiro Upload
+      else
+        h4 Ainda não há conteúdos públicos
+        p Registe-se para começar a partilhar
+        a.btn.btn-primary(href='/auth/register') Registar

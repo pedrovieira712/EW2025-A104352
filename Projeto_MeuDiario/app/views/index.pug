@@ -1,0 +1,52 @@
+extends layout
+
+block content
+  .row
+    .col-12
+      .bg-primary.text-white.rounded.p-3.mb-4.text-center
+        .container
+          h1
+            | Diário Digital
+          if !user
+            a.btn.btn-light.btn.me-3(href='/auth/register') Registar-se
+            a.btn.btn-outline-light.btn(href='/auth/login') Login
+          else
+            a.btn.btn-light.btn.me-3(href='/items/dashboard') Meu Dashboard
+            a.btn.btn-outline-light.btn(href='/sip/upload') Upload SIP
+
+  if items && items.length > 0
+    .row
+      .col-12
+        h3.mb-4 
+          i.bi.bi-clock-history.me-2
+          | Conteúdos Recentes
+        
+        .row
+          each item in items.slice(0, 6)
+            .col-md-4.mb-4
+              .card.h-100
+                .card-body
+                  h5.card-title= item.title
+                  p.card-text= item.description ? item.description.substring(0, 100) + '...' : 'Sem descrição'
+                  
+                  .d-flex.justify-content-between.align-items-center.mt-auto
+                    small.text-muted
+                      i.bi.bi-calendar.me-1
+                      = new Date(item.createdAt).toLocaleDateString('pt-PT')
+                    a.btn.btn-primary.btn-sm(href=`/items/${item._id}`) Ver
+        
+        .text-center.mt-4
+          a.btn.btn-outline-primary(href='/items') 
+            i.bi.bi-grid.me-2
+            | Ver Todos os Conteúdos
+  else
+    .row
+      .col-12
+        .alert.alert-info.text-center.py-5
+          i.bi.bi-inbox.display-1.text-muted.mb-3
+          h4 Ainda não há conteúdos públicos
+          p.text-muted Seja o primeiro a partilhar algo!
+          if user
+            a.btn.btn-primary(href='/items/new') Criar Primeiro Item
+          else
+            a.btn.btn-primary(href='/auth/register') Registar-se

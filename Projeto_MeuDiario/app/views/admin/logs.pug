@@ -1,0 +1,427 @@
+extends ../layout
+
+block content
+  .d-flex.justify-content-between.align-items-center.mb-4
+    h1 
+      i.bi.bi-journal-text.me-2
+      | Logs do Sistema
+    .btn-group
+      a.btn.btn-outline-primary(href='/admin/stats') 
+        i.bi.bi-graph-up.me-1
+        | Estatísticas
+      a.btn.btn-outline-secondary(href='/admin') 
+        i.bi.bi-arrow-left.me-1
+        | Voltar ao Admin
+
+  // Filtros
+  .card.mb-4
+    .card-header.bg-light
+      .d-flex.justify-content-between.align-items-center
+        h5.mb-0 
+          i.bi.bi-funnel.me-2
+          | Filtros
+        button.btn.btn-sm.btn-outline-secondary#toggleFilters
+          i.bi.bi-chevron-down
+    
+    .card-body#filtersContainer
+      form#logFilters.row
+        .col-md-3.mb-3
+          label.form-label(for='actionFilter') Ação
+          select.form-select#actionFilter(name='action')
+            option(value='') Todas as ações
+            option(value='view') Visualização
+            option(value='download') Download
+            option(value='upload') Upload
+            option(value='edit') Edição
+            option(value='delete') Eliminação
+            option(value='login') Login
+            option(value='logout') Logout
+        
+        .col-md-3.mb-3
+          label.form-label(for='userFilter') Utilizador
+          input.form-control#userFilter(type='text', name='user', placeholder='ID ou nome')
+        
+        .col-md-3.mb-3
+          label.form-label(for='itemFilter') Item
+          input.form-control#itemFilter(type='text', name='item', placeholder='ID ou título')
+        
+        .col-md-3.mb-3
+          label.form-label(for='dateRange') Período
+          .input-group
+            input.form-control#dateFrom(type='date', name='dateFrom')
+            input.form-control#dateTo(type='date', name='dateTo')
+        
+        .col-12.d-flex.justify-content-end
+          button.btn.btn-secondary.me-2#resetFilters(type='button') 
+            i.bi.bi-x.me-1
+            | Limpar
+          button.btn.btn-primary#applyFilters(type='submit') 
+            i.bi.bi-search.me-1
+            | Filtrar
+
+  // Estatísticas rápidas
+  .row.mb-4
+    .col-md-3
+      .card.text-center.bg-primary.text-white
+        .card-body
+          h2= logs ? logs.length : 0
+          p.mb-0 Total de Logs
+    .col-md-3
+      .card.text-center.bg-success.text-white
+        .card-body
+          h2= logs ? logs.filter(log => log.action === 'view').length : 0
+          p.mb-0 Visualizações
+    .col-md-3
+      .card.text-center.bg-info.text-white
+        .card-body
+          h2= logs ? logs.filter(log => log.action === 'download').length : 0
+          p.mb-0 Downloads
+    .col-md-3
+      .card.text-center.bg-warning.text-white
+        .card-body
+          h2= logs ? logs.filter(log => log.action === 'upload').length : 0
+          p.mb-0 Uploads
+
+  // Tabela de logs
+  .card
+    .card-header.d-flex.justify-content-between.align-items-center
+      h5.mb-0 
+        i.bi.bi-list.me-2
+        | Registos de Atividade
+      .btn-group
+        button.btn.btn-sm.btn-outline-primary#refreshLogs 
+          i.bi.bi-arrow-clockwise.me-1
+          | Atualizar
+        .dropdown
+          button.btn.btn-sm.btn-outline-success.dropdown-toggle(data-bs-toggle='dropdown') 
+            i.bi.bi-download.me-1
+            | Exportar
+          ul.dropdown-menu
+            li
+              a.dropdown-item(href='/admin/logs/export?format=json') 
+                i.bi.bi-filetype-json.me-2
+                | JSON
+            li
+              a.dropdown-item(href='/admin/logs/export?format=csv') 
+                i.bi.bi-filetype-csv.me-2
+                | CSV
+            li
+              a.dropdown-item(href='/admin/logs/export?format=pdf') 
+                i.bi.bi-filetype-pdf.me-2
+                | PDF
+    
+    .card-body
+      if logs && logs.length > 0
+        .table-responsive
+          table.table.table-hover.table-striped#logsTable
+            thead
+              tr
+                th 
+                  input.form-check-input#selectAllLogs(type='checkbox')
+                th ID
+                th(data-sort='timestamp') 
+                  a.text-decoration-none.text-dark(href='#') 
+                    | Data/Hora 
+                    i.bi.bi-arrow-down-up
+                th(data-sort='action') 
+                  a.text-decoration-none.text-dark(href='#') 
+                    | Ação 
+                    i.bi.bi-arrow-down-up
+                th(data-sort='user') 
+                  a.text-decoration-none.text-dark(href='#') 
+                    | Utilizador 
+                    i.bi.bi-arrow-down-up
+                th Item
+                th IP
+                th Detalhes
+            tbody
+              each log in logs
+                tr
+                  td
+                    input.form-check-input.log-checkbox(type='checkbox', value=log._id)
+                  td
+                    small.text-muted= log._id.toString().substring(0, 8) + '...'
+                  td= new Date(log.timestamp).toLocaleString('pt-PT')
+                  td
+                    span= log.action
+                  td
+                    if log.user
+                      if log.user.name
+                        span= log.user.name
+                      else
+                        span.text-muted= log.user
+                    else
+                      span.text-muted Anónimo
+                  td
+                    if log.item
+                      if log.item.title
+                        a(href=`/items/${log.item._id}`)= log.item.title
+                      else
+                        small.text-muted= log.item
+                    else
+                      span.text-muted -
+                  td
+                    small.text-muted= log.ip || '-'
+                  td
+                    button.btn.btn-sm.btn-outline-info(onclick=`showLogDetails('${log._id}')`) 
+                      i.bi.bi-info-circle
+        
+        // Paginação
+        .d-flex.justify-content-between.align-items-center.mt-3
+          .text-muted Mostrando #{logs.length} de #{totalLogs || logs.length} registos
+          nav(aria-label='Paginação de logs')
+            ul.pagination.pagination-sm
+              li.page-item.disabled
+                a.page-link(href='#', aria-label='Anterior')
+                  span(aria-hidden='true') «
+              li.page-item.active
+                a.page-link(href='#') 1
+              li.page-item
+                a.page-link(href='#') 2
+              li.page-item
+                a.page-link(href='#') 3
+              li.page-item
+                a.page-link(href='#', aria-label='Próximo')
+                  span(aria-hidden='true') »
+      else
+        .alert.alert-info.text-center
+          h4 Nenhum log encontrado
+          p Não existem registos de atividade no sistema ou os filtros aplicados não retornaram resultados.
+          button.btn.btn-outline-primary#resetFiltersEmpty 
+            i.bi.bi-arrow-counterclockwise.me-1
+            | Limpar Filtros
+
+  // Ações em lote
+  if logs && logs.length > 0
+    .card.mt-3
+      .card-body
+        .d-flex.justify-content-between.align-items-center
+          div
+            strong Ações em lote:
+            span.ms-2.text-muted#selectedCount 0 selecionados
+          .btn-group
+            button.btn.btn-outline-danger.btn-sm#bulkDelete(disabled) 
+              i.bi.bi-trash.me-1
+              | Eliminar Selecionados
+            button.btn.btn-outline-success.btn-sm#bulkExport(disabled) 
+              i.bi.bi-download.me-1
+              | Exportar Selecionados
+
+  // Modal de detalhes do log
+  .modal.fade#logDetailsModal(tabindex='-1', aria-hidden='true')
+    .modal-dialog
+      .modal-content
+        .modal-header
+          h5.modal-title Detalhes do Log
+          button.btn-close(type='button', data-bs-dismiss='modal', aria-label='Fechar')
+        .modal-body
+          .text-center.mb-3#logDetailsLoading
+            .spinner-border.text-primary(role='status')
+            p.mt-2 Carregando detalhes...
+          #logDetailsContent(style='display: none;')
+            .mb-3
+              h6 Informações Básicas
+              .table-responsive
+                table.table.table-sm
+                  tr
+                    th ID
+                    td#logId
+                  tr
+                    th Data/Hora
+                    td#logTimestamp
+                  tr
+                    th Ação
+                    td#logAction
+                  tr
+                    th Utilizador
+                    td#logUser
+                  tr
+                    th IP
+                    td#logIp
+            
+            .mb-3
+              h6 Item Relacionado
+              #logItemDetails
+            
+            .mb-3
+              h6 Dados Adicionais
+              pre#logData.bg-light.p-2.rounded
+
+        .modal-footer
+          button.btn.btn-secondary(type='button', data-bs-dismiss='modal') Fechar
+
+  script.
+    // Função auxiliar para obter classe de badge baseada na ação
+    function getActionBadgeClass(action) {
+      switch(action) {
+        case 'view': return 'bg-primary';
+        case 'download': return 'bg-success';
+        case 'upload': return 'bg-info';
+        case 'edit': return 'bg-warning';
+        case 'delete': return 'bg-danger';
+        case 'login': return 'bg-secondary';
+        case 'logout': return 'bg-secondary';
+        default: return 'bg-secondary';
+      }
+    }
+
+    // JavaScript para interatividade
+    document.addEventListener('DOMContentLoaded', function() {
+      // Toggle de filtros
+      const toggleFilters = document.getElementById('toggleFilters');
+      const filtersContainer = document.getElementById('filtersContainer');
+      
+      toggleFilters?.addEventListener('click', function() {
+        if (filtersContainer.style.display === 'none') {
+          filtersContainer.style.display = 'block';
+          toggleFilters.innerHTML = '<i class="bi bi-chevron-up"></i>';
+        } else {
+          filtersContainer.style.display = 'none';
+          toggleFilters.innerHTML = '<i class="bi bi-chevron-down"></i>';
+        }
+      });
+
+      // Seleção de logs
+      const selectAllLogs = document.getElementById('selectAllLogs');
+      const checkboxes = document.querySelectorAll('.log-checkbox');
+      const selectedCount = document.getElementById('selectedCount');
+      const bulkDelete = document.getElementById('bulkDelete');
+      const bulkExport = document.getElementById('bulkExport');
+      
+      selectAllLogs?.addEventListener('change', function() {
+        checkboxes.forEach(cb => cb.checked = this.checked);
+        updateBulkActions();
+      });
+      
+      checkboxes.forEach(cb => {
+        cb.addEventListener('change', updateBulkActions);
+      });
+      
+      function updateBulkActions() {
+        const selected = document.querySelectorAll('.log-checkbox:checked').length;
+        if (selectedCount) selectedCount.textContent = selected + ' selecionados';
+        if (bulkDelete) bulkDelete.disabled = selected === 0;
+        if (bulkExport) bulkExport.disabled = selected === 0;
+      }
+      
+      // Filtros
+      const logFilters = document.getElementById('logFilters');
+      const resetFilters = document.getElementById('resetFilters');
+      const resetFiltersEmpty = document.getElementById('resetFiltersEmpty');
+      
+      logFilters?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        applyFilters();
+      });
+      
+      resetFilters?.addEventListener('click', function() {
+        logFilters.reset();
+        applyFilters();
+      });
+      
+      resetFiltersEmpty?.addEventListener('click', function() {
+        window.location.href = '/admin/logs';
+      });
+      
+      function applyFilters() {
+        const formData = new FormData(logFilters);
+        const params = new URLSearchParams();
+        
+        for (const [key, value] of formData.entries()) {
+          if (value) params.append(key, value);
+        }
+        
+        window.location.href = '/admin/logs?' + params.toString();
+      }
+      
+      // Ordenação da tabela
+      const sortableHeaders = document.querySelectorAll('[data-sort]');
+      
+      sortableHeaders.forEach(header => {
+        header.addEventListener('click', function(e) {
+          e.preventDefault();
+          const sortBy = this.getAttribute('data-sort');
+          const currentUrl = new URL(window.location.href);
+          
+          // Toggle sort direction
+          const currentSort = currentUrl.searchParams.get('sort');
+          const currentDir = currentUrl.searchParams.get('dir');
+          
+          if (currentSort === sortBy) {
+            currentUrl.searchParams.set('dir', currentDir === 'asc' ? 'desc' : 'asc');
+          } else {
+            currentUrl.searchParams.set('sort', sortBy);
+            currentUrl.searchParams.set('dir', 'asc');
+          }
+          
+          window.location.href = currentUrl.toString();
+        });
+      });
+      
+      // Atualizar logs
+      document.getElementById('refreshLogs')?.addEventListener('click', function() {
+        window.location.reload();
+      });
+    });
+    
+    // Função para mostrar detalhes do log
+    function showLogDetails(logId) {
+      const modal = new bootstrap.Modal(document.getElementById('logDetailsModal'));
+      modal.show();
+      
+      document.getElementById('logDetailsLoading').style.display = 'block';
+      document.getElementById('logDetailsContent').style.display = 'none';
+      
+      // Fazer requisição AJAX para obter detalhes do log
+      fetch(`/admin/logs/${logId}`)
+        .then(response => response.json())
+        .then(log => {
+          document.getElementById('logId').textContent = log._id;
+          document.getElementById('logTimestamp').textContent = new Date(log.timestamp).toLocaleString('pt-PT');
+          document.getElementById('logAction').textContent = log.action;
+          document.getElementById('logUser').textContent = log.user ? (log.user.name || log.user) : 'Anónimo';
+          document.getElementById('logIp').textContent = log.ip || '-';
+          
+          // Item relacionado
+          const itemDetails = document.getElementById('logItemDetails');
+          if (log.item) {
+            if (log.item.title) {
+              itemDetails.innerHTML = `
+                <div class="card">
+                  <div class="card-body">
+                    <h6>${log.item.title}</h6>
+                    <p class="mb-0 small">${log.item.description || 'Sem descrição'}</p>
+                    <a href="/items/${log.item._id}" class="btn btn-sm btn-outline-primary mt-2">Ver Item</a>
+                  </div>
+                </div>
+              `;
+            } else {
+              itemDetails.innerHTML = `<p class="text-muted">ID: ${log.item}</p>`;
+            }
+          } else {
+            itemDetails.innerHTML = '<p class="text-muted">Nenhum item relacionado</p>';
+          }
+          
+          // Dados adicionais
+          const logData = document.getElementById('logData');
+          if (log.data && Object.keys(log.data).length > 0) {
+            logData.textContent = JSON.stringify(log.data, null, 2);
+          } else {
+            logData.textContent = 'Nenhum dado adicional';
+          }
+          
+          document.getElementById('logDetailsLoading').style.display = 'none';
+          document.getElementById('logDetailsContent').style.display = 'block';
+        })
+        .catch(error => {
+          console.error('Erro ao carregar detalhes do log:', error);
+          document.getElementById('logDetailsContent').innerHTML = `
+            <div class="alert alert-danger">
+              <h5>Erro ao carregar detalhes</h5>
+              <p>${error.message || 'Ocorreu um erro ao tentar carregar os detalhes deste log.'}</p>
+            </div>
+          `;
+          document.getElementById('logDetailsLoading').style.display = 'none';
+          document.getElementById('logDetailsContent').style.display = 'block';
+        });
+    }

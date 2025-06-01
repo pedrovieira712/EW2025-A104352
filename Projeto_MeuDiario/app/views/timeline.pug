@@ -1,0 +1,211 @@
+extends layout
+
+block content
+  .d-flex.justify-content-between.align-items-center.mb-4
+    h2
+      | Timeline Cronológica
+    if user
+      a.btn.btn-success(href='/sip/upload') 
+        i.bi.bi-upload.me-1
+        | Upload SIP
+
+  if items && items.length > 0
+    .timeline-wrapper
+      each item, index in items
+        if item.isPublic || (user && (item.submitter._id === user.id || user.isAdmin))
+          .timeline-item(class=index % 2 === 0 ? 'timeline-left' : 'timeline-right')
+            .timeline-marker
+              i.bi(class=item.type === 'mixed' ? 'bi-archive' : item.type === 'photo' ? 'bi-image' : item.type === 'document' ? 'bi-file-text' : 'bi-circle-fill')
+            
+            .timeline-content
+              .card.shadow-sm
+                .card-header.d-flex.justify-content-between.align-items-center
+                  .d-flex.align-items-center
+                    h5.mb-0.text-primary= item.title
+                    if !item.isPublic
+                      span.badge.bg-warning.ms-2 
+                        i.bi.bi-lock.me-1
+                        | Privado
+                  .timeline-date
+                    i.bi.bi-calendar3.me-1
+                    small.text-muted= new Date(item.createdAt).toLocaleDateString('pt-PT')
+                
+                .card-body
+                  if item.description
+                    p.card-text.mb-3= item.description
+                  
+                  .row.g-2.mb-3
+                    .col-auto
+                      span.badge.bg-light.text-dark
+                        i.bi.bi-tag.me-1
+                        = item.type
+                    if item.category
+                      .col-auto
+                        span.badge.bg-light.text-dark
+                          i.bi.bi-folder.me-1
+                          = item.category.name
+                    .col-auto
+                      span.badge.bg-light.text-dark
+                        i.bi.bi-person.me-1
+                        = item.producer
+                  
+                  if item.tags && item.tags.length > 0
+                    .mb-3
+                      each tag in item.tags.slice(0, 3)
+                        span.badge.bg-secondary.me-1= tag
+                      if item.tags.length > 3
+                        span.text-muted.small +#{item.tags.length - 3} mais
+                  
+                  .d-flex.justify-content-between.align-items-center
+                    small.text-muted
+                      i.bi.bi-person-circle.me-1
+                      | Por #{item.submitter.name}
+                    .btn-group.btn-group-sm
+                      a.btn.btn-primary(href=`/items/${item._id}`) 
+                        i.bi.bi-eye.me-1
+                        | Ver
+                      if user && (user.id === item.submitter._id || user.isAdmin)
+                        a.btn.btn-outline-secondary(href=`/items/edit/${item._id}`) 
+                          i.bi.bi-pencil.me-1
+                          | Editar
+                      if item.type === 'zip'
+                        a.btn.btn-outline-success(href=`/sip/export/${item._id}`, download) 
+                          i.bi.bi-download.me-1
+                          | Export
+
+
+  else
+    .text-center.py-5
+      .timeline-empty
+        i.bi.bi-clock-history.display-1.text-muted.mb-3
+        h4.text-muted Sua timeline está vazia
+        if user
+          p.text-muted Comece a construir sua história digital
+          a.btn.btn-success.btn-lg(href='/sip/upload') 
+            i.bi.bi-upload.me-2
+            | Primeiro Upload
+        else
+          p.text-muted Registe-se para começar sua jornada
+          a.btn.btn-primary.btn-lg(href='/auth/register') 
+            i.bi.bi-person-plus.me-2
+            | Registar
+
+  style.
+    .timeline-wrapper {
+      position: relative;
+      padding: 2rem 0;
+    }
+    
+    .timeline-wrapper::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: linear-gradient(to bottom, #007bff, #6c757d);
+      transform: translateX(-50%);
+      z-index: 1;
+    }
+    
+    .timeline-item {
+      position: relative;
+      margin-bottom: 3rem;
+      display: flex;
+      align-items: center;
+    }
+    
+    .timeline-left {
+      flex-direction: row;
+    }
+    
+    .timeline-right {
+      flex-direction: row-reverse;
+    }
+    
+    .timeline-marker {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40px;
+      height: 40px;
+      background: #007bff;
+      border: 4px solid white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1rem;
+      z-index: 2;
+      box-shadow: 0 2px 8px rgba(0,123,255,0.3);
+    }
+    
+    .timeline-content {
+      width: 45%;
+      margin: 0 2.5%;
+    }
+    
+    .timeline-left .timeline-content {
+      margin-right: 5%;
+    }
+    
+    .timeline-right .timeline-content {
+      margin-left: 5%;
+    }
+    
+    .timeline-end {
+      position: relative;
+      text-align: center;
+      margin-top: 2rem;
+    }
+    
+    .timeline-end .timeline-marker {
+      position: relative;
+      left: auto;
+      transform: none;
+      margin: 0 auto 1rem;
+      background: #6c757d;
+    }
+    
+    .timeline-empty {
+      padding: 3rem;
+      border: 2px dashed #dee2e6;
+      border-radius: 1rem;
+      background: #f8f9fa;
+    }
+    
+    .card {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+    }
+    
+    .timeline-date {
+      font-weight: 500;
+      color: #007bff;
+    }
+    
+    @media (max-width: 768px) {
+      .timeline-wrapper::before {
+        left: 20px;
+      }
+      
+      .timeline-item {
+        flex-direction: row !important;
+        padding-left: 60px;
+      }
+      
+      .timeline-marker {
+        left: 20px !important;
+        transform: none !important;
+      }
+      
+      .timeline-content {
+        width: 100% !important;
+        margin: 0 !important;
+      }
+    }

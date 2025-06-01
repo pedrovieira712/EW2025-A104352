@@ -1,0 +1,132 @@
+extends ../layout
+
+block content
+  .d-flex.justify-content-between.align-items-center.mb-4
+    h1 
+      i.bi.bi-graph-up.me-2
+      | Estatísticas do Sistema
+    a.btn.btn-outline-primary(href='/admin') Voltar ao Admin
+
+  if stats
+    .row.mb-4
+      .col-md-3
+        .card.text-center.bg-primary.text-white
+          .card-body
+            h2= stats.total || 0
+            p.mb-0 Total de Logs
+      .col-md-3
+        .card.text-center.bg-success.text-white
+          .card-body
+            h2= stats.actionStats ? stats.actionStats.filter(a => a._id === 'view')[0]?.count || 0 : 0
+            p.mb-0 Visualizações
+      .col-md-3
+        .card.text-center.bg-info.text-white
+          .card-body
+            h2= stats.actionStats ? stats.actionStats.filter(a => a._id === 'download')[0]?.count || 0 : 0
+            p.mb-0 Downloads
+      .col-md-3
+        .card.text-center.bg-warning.text-white
+          .card-body
+            h2= stats.actionStats ? stats.actionStats.filter(a => a._id === 'upload')[0]?.count || 0 : 0
+            p.mb-0 Uploads
+
+    .row
+      .col-md-6
+        .card
+          .card-header
+            h5.mb-0 Ações por Tipo
+          .card-body
+            if stats.actionStats && stats.actionStats.length > 0
+              .table-responsive
+                table.table.table-sm
+                  thead
+                    tr
+                      th Ação
+                      th Quantidade
+                      th Percentagem
+                  tbody
+                    each action in stats.actionStats
+                      tr
+                        td
+                          span.badge(class=action._id === 'view' ? 'bg-primary' : action._id === 'download' ? 'bg-success' : action._id === 'upload' ? 'bg-info' : 'bg-secondary')= action._id
+                        td= action.count
+                        td= ((action.count / stats.total) * 100).toFixed(1) + '%'
+            else
+              p.text-muted Nenhuma atividade registada
+
+      .col-md-6
+        .card
+          .card-header
+            h5.mb-0 Atividade Diária (Últimos 7 dias)
+          .card-body
+            if stats.dailyStats && stats.dailyStats.length > 0
+              .table-responsive
+                table.table.table-sm
+                  thead
+                    tr
+                      th Data
+                      th Atividades
+                  tbody
+                    each day in stats.dailyStats
+                      tr
+                        td= `${day._id.day}/${day._id.month}/${day._id.year}`
+                        td
+                          .progress(style='height: 20px;')
+                            .progress-bar(style=`width: ${(day.count / Math.max(...stats.dailyStats.map(d => d.count))) * 100}%`)= day.count
+            else
+              p.text-muted Nenhuma atividade nos últimos 7 dias
+
+    .row.mt-4
+      .col-md-6
+        .card
+          .card-header
+            h5.mb-0 Items Mais Vistos
+          .card-body
+            if stats.topItems && stats.topItems.length > 0
+              .list-group.list-group-flush
+                each item in stats.topItems.slice(0, 5)
+                  .list-group-item.d-flex.justify-content-between.align-items-center
+                    span Item ID: #{item._id}
+                    span.badge.bg-primary.rounded-pill= item.count + ' views'
+            else
+              p.text-muted Nenhum item visualizado ainda
+
+      .col-md-6
+        .card
+          .card-header
+            h5.mb-0 Utilizadores Mais Ativos
+          .card-body
+            if stats.topUsers && stats.topUsers.length > 0
+              .list-group.list-group-flush
+                each userStat in stats.topUsers.slice(0, 5)
+                  .list-group-item.d-flex.justify-content-between.align-items-center
+                    span User ID: #{userStat._id}
+                    span.badge.bg-success.rounded-pill= userStat.count + ' ações'
+            else
+              p.text-muted Nenhuma atividade de utilizadores
+
+    .row.mt-4
+      .col-12
+        .card
+          .card-header.d-flex.justify-content-between.align-items-center
+            h5.mb-0 Exportar Dados
+            .btn-group
+              a.btn.btn-outline-primary.btn-sm(href='/admin/logs/export') Exportar Logs
+              button.btn.btn-outline-success.btn-sm#exportStats Exportar Estatísticas
+          .card-body
+            p Exporte os dados do sistema para análise externa ou backup.
+            .alert.alert-info.mb-0
+              small 
+                i.bi.bi-info-circle.me-1
+                | Os logs são exportados em formato JSON e contêm informações detalhadas sobre todas as atividades do sistema.
+
+  else
+    .alert.alert-warning
+      h4 Erro ao carregar estatísticas
+      p Não foi possível obter os dados estatísticos do sistema.
+
+  script.
+    document.getElementById('exportStats')?.addEventListener('click', function() {
+      // Implementar exportação de estatísticas
+      alert('Funcionalidade de exportação de estatísticas em desenvolvimento');
+    });

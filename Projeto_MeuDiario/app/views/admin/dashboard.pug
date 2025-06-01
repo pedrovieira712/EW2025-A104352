@@ -1,0 +1,52 @@
+extends ../layout
+
+block content
+  h1.mb-4 
+    i.bi.bi-gear.me-2
+    | Painel de Administração
+
+  .row.mb-4
+    .col-md-3
+      .card.text-center.bg-primary.text-white
+        .card-body
+          h2= stats.users
+          p.mb-0 Utilizadores
+    .col-md-3
+      .card.text-center.bg-success.text-white
+        .card-body
+          h2= stats.items
+          p.mb-0 Items
+    .col-md-3
+      .card.text-center.bg-warning.text-white
+        .card-body
+          h2= stats.categories
+          p.mb-0 Categorias
+    .col-md-3
+      .card.text-center.bg-info.text-white
+        .card-body
+          h2= stats.logs
+          p.mb-0 Logs
+
+  .row
+    .col-md-6
+      .card
+        .card-header
+          h5.mb-0 Ações Rápidas
+        .card-body
+          .d-grid.gap-2
+            a.btn.btn-outline-primary(href='/admin/users') Gerir Utilizadores
+            a.btn.btn-outline-success(href='/admin/categories') Gerir Categorias
+            a.btn.btn-outline-info(href='/admin/logs') Ver Logs
+            a.btn.btn-outline-warning(href='/admin/stats') Estatísticas
+    
+    .col-md-6
+      .card
+        .card-header
+          h5.mb-0 Sistema
+        .card-body
+          p Status: 
+            span.badge.bg-success Online
+          p Última atualização: 
+            = new Date().toLocaleDateString('pt-PT')
+          .d-grid
+            a.btn.btn-outline-danger(href='/admin/logs/export') Exportar Logs

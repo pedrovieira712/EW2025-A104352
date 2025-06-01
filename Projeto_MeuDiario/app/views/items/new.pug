@@ -1,0 +1,73 @@
+extends ../layout
+
+block content
+  .row.justify-content-center
+    .col-md-8
+      .card
+        .card-header
+          h3 
+            i.bi.bi-plus-circle.me-2
+            | Criar Novo Item
+        .card-body
+          form(method='POST', action='/items/new')
+            .row
+              .col-md-6
+                .mb-3
+                  label.form-label(for='title') Título *
+                  input.form-control(type='text', id='title', name='title', required)
+                
+                .mb-3
+                  label.form-label(for='type') Tipo *
+                  select.form-control(id='type', name='type', required)
+                    option(value='') Selecionar tipo
+                    option(value='photo') Foto
+                    option(value='document') Documento
+                    option(value='text') Texto
+                    option(value='mixed') Misto
+                    option(value='other') Outro
+                
+                .mb-3
+                  label.form-label(for='category') Categoria
+                  select.form-control(id='category', name='category')
+                    option(value='') Sem categoria
+                    if categories
+                      each category in categories
+                        option(value=category._id)= category.name
+                
+                .mb-3
+                  label.form-label(for='producer') Produtor *
+                  input.form-control(type='text', id='producer', name='producer', value=user.name, required)
+              
+              .col-md-6
+                .mb-3
+                  label.form-label(for='createdAt') Data de Criação
+                  input.form-control(type='date', id='createdAt', name='createdAt', value=new Date().toISOString().split('T')[0])
+                
+                .mb-3
+                  label.form-label Visibilidade
+                  .form-check
+                    input.form-check-input(type='checkbox', id='isPublic', name='isPublic')
+                    label.form-check-label(for='isPublic') Tornar público
+                
+                .mb-3
+                  label.form-label(for='tags') Tags (separadas por vírgula)
+                  input.form-control(type='text', id='tags', name='tags', placeholder='viagem, paris, férias')
+                
+                .mb-3
+                  label.form-label(for='location') Localização
+                  input.form-control(type='text', id='location', name='location', placeholder='Paris, França')
+            
+            .mb-3
+              label.form-label(for='description') Descrição
+              textarea.form-control(id='description', name='description', rows='4', placeholder='Descreva o conteúdo...')
+            
+            .alert.alert-info
+              i.bi.bi-info-circle.me-2
+              strong Nota: 
+              | Este formulário cria apenas o item. Para adicionar ficheiros, use o sistema de upload SIP ou edite o item após criação.
+            
+            .d-flex.justify-content-between
+              a.btn.btn-secondary(href='/items/dashboard') Cancelar
+              button.btn.btn-primary(type='submit') 
+                i.bi.bi-check.me-1
+                | Criar Item

@@ -1,0 +1,285 @@
+extends ../layout
+
+block content
+  .d-flex.justify-content-between.align-items-center.mb-4
+    h1 
+      i.bi.bi-folder-plus.me-2
+      | Gestão de Categorias
+    .btn-group
+      a.btn.btn-primary(href='/admin/categories/new') 
+        i.bi.bi-plus.me-1
+        | Nova Categoria
+      a.btn.btn-outline-secondary(href='/admin') 
+        i.bi.bi-arrow-left.me-1
+        | Voltar ao Admin
+
+  .row.mb-4
+    .col-md-3
+      .card.text-center.bg-primary.text-white
+        .card-body
+          h2= categories ? categories.length : 0
+          p.mb-0 Total Categorias
+    .col-md-3
+      .card.text-center.bg-success.text-white
+        .card-body
+          h2= categories ? categories.filter(c => !c.parent).length : 0
+          p.mb-0 Categorias Principais
+    .col-md-3
+      .card.text-center.bg-info.text-white
+        .card-body
+          h2= categories ? categories.filter(c => c.parent).length : 0
+          p.mb-0 Subcategorias
+    .col-md-3
+      .card.text-center.bg-warning.text-white
+        .card-body
+          h2= categories ? categories.reduce((total, cat) => total + (cat.itemCount || 0), 0) : 0
+          p.mb-0 Total Items
+
+  if categories && categories.length > 0
+    .card
+      .card-header.d-flex.justify-content-between.align-items-center
+        h5.mb-0 
+          i.bi.bi-list.me-2
+          | Lista de Categorias
+        .btn-group.btn-group-sm
+          button.btn.btn-outline-primary#viewGrid 
+            i.bi.bi-grid
+          button.btn.btn-outline-primary.active#viewTable 
+            i.bi.bi-list
+
+      .card-body
+        // Vista em Tabela
+        #tableView.table-responsive
+          table.table.table-hover
+            thead
+              tr
+                th 
+                  input.form-check-input(type='checkbox', id='selectAll')
+                th Cor
+                th Nome
+                th Descrição
+                th Categoria Pai
+                th Items
+                th Criada
+                th Ações
+            tbody
+              each category in categories
+                tr
+                  td
+                    input.form-check-input.category-checkbox(type='checkbox', value=category._id)
+                  td
+                    .color-indicator(style=`background-color: ${category.color || '#007bff'}; width: 20px; height: 20px; border-radius: 50%;`)
+                  td
+                    .d-flex.align-items-center
+                      if category.icon
+                        i.me-2(class=`bi bi-${category.icon}`)
+                      strong= category.name
+                  td= category.description || 'Sem descrição'
+                  td
+                    if category.parent
+                      span.badge.bg-light.text-dark= category.parent.name
+                    else
+                      span.text-muted Principal
+                  td
+                    span.badge.bg-secondary= category.itemCount || 0
+                  td= new Date(category.createdAt).toLocaleDateString('pt-PT')
+                  td
+                    .btn-group.btn-group-sm
+                      a.btn.btn-outline-primary(href=`/admin/categories/${category._id}`) 
+                        i.bi.bi-eye
+                      a.btn.btn-outline-secondary(href=`/admin/categories/${category._id}/edit`) 
+                        i.bi.bi-pencil
+                      button.btn.btn-outline-danger(onclick=`deleteCategory('${category._id}', '${category.name}')`) 
+                        i.bi.bi-trash
+
+        // Vista em Grid (inicialmente oculta)
+        #gridView.row(style='display: none;')
+          each category in categories
+            .col-md-4.col-lg-3.mb-3
+              .card.h-100.category-card(data-id=category._id)
+                .card-header.text-center(style=`background-color: ${category.color || '#007bff'}; color: white;`)
+                  if category.icon
+                    i.mb-2(class=`bi bi-${category.icon}`, style='font-size: 2rem;')
+                  h6.mb-0= category.name
+                
+                .card-body.text-center
+                  if category.description
+                    p.card-text.small= category.description.length > 50 ? category.description.substring(0, 50) + '...' : category.description
+                  else
+                    p.text-muted.small Sem descrição
+                  
+                  if category.parent
+                    small.text-muted
+                      i.bi.bi-arrow-up.me-1
+                      = category.parent.name
+                  
+                  .mt-auto
+                    .d-flex.justify-content-between.align-items-center
+                      span.badge.bg-secondary= (category.itemCount || 0) + ' items'
+                      .btn-group.btn-group-sm
+                        a.btn.btn-outline-primary(href=`/admin/categories/${category._id}`) 
+                          i.bi.bi-eye
+                        .dropdown
+                          button.btn.btn-outline-secondary.dropdown-toggle(data-bs-toggle='dropdown')
+                            i.bi.bi-three-dots
+                          ul.dropdown-menu
+                            li
+                              a.dropdown-item(href=`/admin/categories/${category._id}/edit`) 
+                                i.bi.bi-pencil.me-2
+                                | Editar
+                            li
+                              hr.dropdown-divider
+                            li
+                              a.dropdown-item.text-danger(href='#', onclick=`deleteCategory('${category._id}', '${category.name}')`) 
+                                i.bi.bi-trash.me-2
+                                | Eliminar
+
+    // Ações em lote
+    .card.mt-3
+      .card-body
+        .d-flex.justify-content-between.align-items-center
+          div
+            strong Ações em lote:
+            span.ms-2.text-muted#selectedCount 0 selecionadas
+          .btn-group
+            button.btn.btn-outline-danger.btn-sm#bulkDelete(disabled) 
+              i.bi.bi-trash.me-1
+              | Eliminar Selecionadas
+            button.btn.btn-outline-secondary.btn-sm#bulkExport(disabled) 
+              i.bi.bi-download.me-1
+              | Exportar Selecionadas
+
+  else
+    .alert.alert-info.text-center
+      h4 
+        i.bi.bi-folder-x.me-2
+        | Nenhuma categoria encontrada
+      p O sistema ainda não tem categorias definidas.
+      a.btn.btn-primary(href='/admin/categories/new') 
+        i.bi.bi-plus.me-1
+        | Criar Primeira Categoria
+
+  // Ferramentas adicionais
+  .row.mt-4
+    .col-md-6
+      .card
+        .card-header
+          h6.mb-0 
+            i.bi.bi-tools.me-2
+            | Ferramentas
+        .card-body
+          .d-grid.gap-2
+            a.btn.btn-outline-primary(href='/admin/categories/import') 
+              i.bi.bi-upload.me-2
+              | Importar Categorias
+            a.btn.btn-outline-success(href='/admin/categories/export') 
+              i.bi.bi-download.me-2
+              | Exportar Todas
+            button.btn.btn-outline-warning#reorganize 
+              i.bi.bi-diagram-3.me-2
+              | Reorganizar Hierarquia
+
+    .col-md-6
+      .card
+        .card-header
+          h6.mb-0 
+            i.bi.bi-info-circle.me-2
+            | Informações
+        .card-body
+          ul.list-unstyled.mb-0
+            li 
+              i.bi.bi-check-circle.text-success.me-2
+              | Categorias organizam os items
+            li 
+              i.bi.bi-check-circle.text-success.me-2
+              | Suportam hierarquias (pai/filho)
+            li 
+              i.bi.bi-check-circle.text-success.me-2
+              | Podem ter cores e ícones personalizados
+            li 
+              i.bi.bi-exclamation-triangle.text-warning.me-2
+              | Eliminar categoria remove associação dos items
+
+  script.
+    // JavaScript para gestão de categorias
+    document.addEventListener('DOMContentLoaded', function() {
+      const selectAll = document.getElementById('selectAll');
+      const checkboxes = document.querySelectorAll('.category-checkbox');
+      const selectedCount = document.getElementById('selectedCount');
+      const bulkDelete = document.getElementById('bulkDelete');
+      const bulkExport = document.getElementById('bulkExport');
+      const viewGrid = document.getElementById('viewGrid');
+      const viewTable = document.getElementById('viewTable');
+      const gridView = document.getElementById('gridView');
+      const tableView = document.getElementById('tableView');
+
+      // Alternar entre vista grid e tabela
+      viewGrid?.addEventListener('click', function() {
+        gridView.style.display = 'block';
+        tableView.style.display = 'none';
+        viewGrid.classList.add('active');
+        viewTable.classList.remove('active');
+      });
+
+      viewTable?.addEventListener('click', function() {
+        gridView.style.display = 'none';
+        tableView.style.display = 'block';
+        viewTable.classList.add('active');
+        viewGrid.classList.remove('active');
+      });
+
+      // Selecionar todas as categorias
+      selectAll?.addEventListener('change', function() {
+        checkboxes.forEach(cb => cb.checked = this.checked);
+        updateBulkActions();
+      });
+
+      // Atualizar contagem de selecionadas
+      checkboxes.forEach(cb => {
+        cb.addEventListener('change', updateBulkActions);
+      });
+
+      function updateBulkActions() {
+        const selected = document.querySelectorAll('.category-checkbox:checked').length;
+        selectedCount.textContent = selected + ' selecionadas';
+        bulkDelete.disabled = selected === 0;
+        bulkExport.disabled = selected === 0;
+      }
+
+      // Ações em lote
+      bulkDelete?.addEventListener('click', function() {
+        const selected = Array.from(document.querySelectorAll('.category-checkbox:checked')).map(cb => cb.value);
+        if (confirm(`Eliminar ${selected.length} categorias selecionadas?`)) {
+          // Implementar eliminação em lote
+          console.log('Eliminar categorias:', selected);
+        }
+      });
+
+      // Reorganizar hierarquia
+      document.getElementById('reorganize')?.addEventListener('click', function() {
+        window.location.href = '/admin/categories/hierarchy';
+      });
+    });
+
+    // Função para eliminar categoria individual
+    function deleteCategory(id, name) {
+      if (confirm(`Tem certeza que deseja eliminar a categoria "${name}"?`)) {
+        fetch(`/admin/categories/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(response => {
+          if (response.ok) {
+            location.reload();
+          } else {
+            alert('Erro ao eliminar categoria');
+          }
+        })
+        .catch(error => {
+          console.error('Erro:', error);
+          alert('Erro ao eliminar categoria');
+        });
+      }
+    }

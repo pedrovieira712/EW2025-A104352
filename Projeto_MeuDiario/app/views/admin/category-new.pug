@@ -1,0 +1,47 @@
+extends ../layout
+
+block content
+  .row.justify-content-center
+    .col-md-8
+      .card
+        .card-header
+          h3 
+            i.bi.bi-folder-plus.me-2
+            | Nova Categoria
+        .card-body
+          if error
+            .alert.alert-danger= error
+          
+          form(method='POST', action='/admin/categories/new')
+            .mb-4
+              label.form-label(for='name') Nome da Categoria *
+              input.form-control(type='text', id='name', name='name', required, placeholder='Ex: Viagens', value=formData ? formData.name : '')
+              .form-text Escolha um nome único e descritivo
+            
+            .mb-4
+              label.form-label(for='description') Descrição
+              textarea.form-control(id='description', name='description', rows='3', placeholder='Descreva o propósito desta categoria...')= formData ? formData.description : ''
+              .form-text Opcional: ajuda os utilizadores a entender o uso da categoria
+            
+            .mb-4
+              label.form-label(for='parent') Categoria Pai
+              select.form-control(id='parent', name='parent')
+                option(value='') Categoria principal (sem pai)
+                if categories && categories.length > 0
+                  each category in categories.filter(c => !c.parent)
+                    option(value=category._id, selected=formData && formData.parent === category._id)= category.name
+                else
+                  option(value='', disabled) Nenhuma categoria disponível
+              .form-text Deixe vazio para categoria principal ou escolha uma categoria pai
+            
+            .alert.alert-info
+              i.bi.bi-info-circle.me-2
+              | As categorias ajudam a organizar os items do sistema. Após criar uma categoria, você poderá associar items a ela.
+            
+            .d-flex.justify-content-between
+              a.btn.btn-secondary(href='/admin/categories') 
+                i.bi.bi-arrow-left.me-1
+                | Voltar
+              button.btn.btn-primary(type='submit') 
+                i.bi.bi-check.me-1
+                | Criar Categoria

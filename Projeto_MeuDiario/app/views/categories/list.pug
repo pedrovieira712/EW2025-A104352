@@ -1,0 +1,56 @@
+extends ../layout
+
+block content
+  .d-flex.justify-content-between.align-items-center.mb-4
+    h2
+      | Categorias
+    if user && user.isAdmin
+      a.btn.btn-primary(href='/admin/categories/new') Nova Categoria
+
+  if categories && categories.length > 0
+    .row
+      each category in categories
+        .col-md-6.col-lg-4.mb-3
+          .card
+            .card-body
+              h5.card-title= category.name
+              
+              if category.description
+                p.card-text= category.description
+              else
+                p.text-muted Sem descrição
+              
+              // Mostrar se é principal ou subcategoria
+              if category.parent
+                if typeof category.parent === 'object' && category.parent.name
+                  small.text-muted
+                    | Subcategoria de: #{category.parent.name}
+                else
+                  small.text-muted
+                    | Subcategoria de: ID #{category.parent}
+              else
+                small.text-muted
+                  | Categoria Principal
+              
+              .mt-3
+                a.btn.btn-outline-primary(href=`/categories/${category._id}`) Ver Items
+                
+                if user && user.isAdmin
+                  a.btn.btn-outline-secondary.btn-sm.ms-2(href=`/admin/categories/${category._id}/edit`) Editar
+
+  else
+    .alert.alert-info.text-center
+      h4 Nenhuma categoria encontrada
+      if user && user.isAdmin
+        a.btn.btn-primary(href='/admin/categories/new') Criar Primeira Categoria
+
+  script.
+    function deleteCategory(id, name) {
+      if (confirm(`Eliminar categoria "${name}"?`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/admin/categories/${id}/delete`;
+        document.body.appendChild(form);
+        form.submit();
+      }
+    }

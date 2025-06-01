@@ -1,0 +1,76 @@
+extends ../layout
+
+block content
+  .row.justify-content-center
+    .col-md-8
+      .card
+        .card-header
+          h3 
+            i.bi.bi-pencil.me-2
+            | Editar Item
+        .card-body
+          if item
+            form(method='POST', action=`/items/edit/${item._id}`)
+              .row
+                .col-md-6
+                  .mb-3
+                    label.form-label(for='title') Título *
+                    input.form-control(type='text', id='title', name='title', value=item.title, required)
+                  
+                  .mb-3
+                    label.form-label(for='type') Tipo *
+                    select.form-control(id='type', name='type', required)
+                      option(value='photo', selected=item.type === 'photo') Foto
+                      option(value='document', selected=item.type === 'document') Documento
+                      option(value='text', selected=item.type === 'text') Texto
+                      option(value='mixed', selected=item.type === 'mixed') Misto
+                      option(value='zip', selected=item.type === 'zip') ZIP/SIP
+                      option(value='other', selected=item.type === 'other') Outro
+                  
+                  .mb-3
+                    label.form-label(for='category') Categoria
+                    select.form-control(id='category', name='category')
+                      option(value='') Sem categoria
+                      if categories
+                        each category in categories
+                          option(value=category._id, selected=item.category && item.category._id === category._id)= category.name
+                  
+
+                .col-md-6
+                  .mb-3
+                    label.form-label(for='createdAt') Data de Criação
+                    input.form-control(type='date', id='createdAt', name='createdAt', value=item.createdAt ? new Date(item.createdAt).toISOString().split('T')[0] : '')
+
+                  .mb-3
+                    label.form-label(for='producer') Produtor *
+                    input.form-control(type='text', id='producer', name='producer', value=item.producer, required)
+                  
+                  .mb-3.pt-3
+                    label.form-label Visibilidade
+                    .form-check
+                      input.form-check-input(type='checkbox', id='isPublic', name='isPublic', checked=item.isPublic)
+                      label.form-check-label(for='isPublic') Tornar público
+                  
+              .mb-3
+                label.form-label(for='description') Descrição
+                textarea.form-control(id='description', name='description', rows='4')= item.description || ''
+              
+              if item.files && item.files.length > 0
+                .mb-3
+                  label.form-label Ficheiros Associados
+                  .list-group
+                    each file in item.files
+                      .list-group-item.d-flex.justify-content-between.align-items-center
+                        div
+                          strong= file.originalName
+                          br
+                          small.text-muted= (file.size / 1024).toFixed(1) + ' KB'
+                        a.btn.btn-sm.btn-outline-primary(href=`/file/download/${file._id}`) Download
+              
+              .d-flex.justify-content-between
+                a.btn.btn-secondary(href='/items') Cancelar
+                button.btn.btn-primary(type='submit') 
+                  i.bi.bi-save.me-1
+                  | Guardar Alterações
+          else
+            .alert.alert-danger Item não encontrado
