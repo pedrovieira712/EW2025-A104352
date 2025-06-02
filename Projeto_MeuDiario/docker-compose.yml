@@ -1,0 +1,27 @@
+version: '3.8'
+services:
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+  
+  api:
+    build: ./api
+    ports:
+      - "25000:25000"
+    depends_on:
+      - mongodb
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/diario_digital
+  
+  frontend:
+    build: ./app
+    ports:
+      - "25001:25001"
+    depends_on:
+      - api
+
+volumes:
+  mongo_data:
