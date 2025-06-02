@@ -1,0 +1,224 @@
+extends ../layout
+
+block content
+  if error
+    .alert.alert-danger.alert-dismissible.fade.show
+      = error
+      button.btn-close(type='button', data-bs-dismiss='alert')
+  .d-flex.justify-content-between.align-items-center.mb-4
+    h2
+      | Meus Conteúdos
+    .btn-group
+      a.btn.btn-success(href='/sip/upload') 
+        i.bi.bi-upload.me-1
+        | Upload SIP
+      a.btn.btn-primary(href='/items/new') 
+        i.bi.bi-plus.me-1
+        | Novo Item
+
+  // Navegação por abas
+  ul.nav.nav-tabs.mb-4
+    li.nav-item
+      a.nav-link.active#publicTab(href='#public', data-bs-toggle='tab') 
+        i.bi.bi-globe.me-1
+        | Públicos
+        if publicItems
+          span.badge.bg-primary.ms-2= publicItems.length
+    li.nav-item
+      a.nav-link#privateTab(href='#private', data-bs-toggle='tab') 
+        i.bi.bi-lock.me-1
+        | Privados
+        if privateItems
+          span.badge.bg-warning.ms-2= privateItems.length
+    if user && user.isAdmin
+      li.nav-item
+        a.nav-link#allTab(href='#all', data-bs-toggle='tab') 
+          i.bi.bi-shield-check.me-1
+          | Todos (Admin)
+          if allItems
+            span.badge.bg-danger.ms-2= allItems.length
+
+  .tab-content
+    // Aba Públicos
+    .tab-pane.fade.show.active#public
+      if publicItems && publicItems.length > 0
+        .row
+          each item in publicItems
+            .col-md-6.col-lg-4.mb-4
+              .card.h-100
+                .card-header.d-flex.justify-content-between.align-items-center
+                  h6.mb-0= item.title
+                  .d-flex.align-items-center
+                    span.badge.bg-success.me-2 Público
+                    span.badge(class=item.type === 'zip' ? 'bg-info' : 'bg-secondary')= item.type
+                
+                .card-body
+                  if item.description
+                    p.card-text= item.description.length > 80 ? item.description.substring(0, 80) + '...' : item.description
+                  else
+                    p.text-muted.card-text Sem descrição
+                  
+                  .row.small.text-muted.mb-2
+                    .col-6
+                      i.bi.bi-person.me-1
+                      = item.producer
+                    .col-6
+                      i.bi.bi-calendar.me-1
+                      = new Date(item.createdAt).toLocaleDateString('pt-PT')
+                  
+                  if item.category
+                    .mb-2
+                      i.bi.bi-folder.me-1
+                      span.badge.bg-light.text-dark= item.category.name
+                
+                .card-footer.bg-transparent
+                  .d-flex.justify-content-between.align-items-center
+                    small.text-muted Por: #{item.submitter.name}
+                    .btn-group.btn-group-sm
+                      a.btn.btn-outline-primary(href=`/items/${item._id}`) Ver
+                      a.btn.btn-outline-secondary(href=`/items/edit/${item._id}`) Editar
+                      if item.type === 'zip'
+                        a.btn.btn-outline-success(href=`/sip/export/${item._id}`, download) 
+                          i.bi.bi-download
+                      if user && user.isAdmin
+                        button.btn.btn-outline-danger(onclick=`deleteItem('${item._id}', '${item.title}')`) 
+                          i.bi.bi-trash
+      else
+        .alert.alert-info.text-center
+          h4 Nenhum conteúdo público
+          p Seus conteúdos públicos aparecerão aqui.
+          a.btn.btn-primary(href='/items/new') Criar Primeiro Conteúdo
+
+    // Aba Privados
+    .tab-pane.fade#private
+      if privateItems && privateItems.length > 0
+        .row
+          each item in privateItems
+            .col-md-6.col-lg-4.mb-4
+              .card.h-100.border-warning
+                .card-header.d-flex.justify-content-between.align-items-center.bg-warning.bg-opacity-10
+                  h6.mb-0= item.title
+                  .d-flex.align-items-center
+                    span.badge.bg-warning.me-2 Privado
+                    span.badge(class=item.type === 'zip' ? 'bg-info' : 'bg-secondary')= item.type
+                
+                .card-body
+                  if item.description
+                    p.card-text= item.description.length > 80 ? item.description.substring(0, 80) + '...' : item.description
+                  else
+                    p.text-muted.card-text Sem descrição
+                  
+                  .row.small.text-muted.mb-2
+                    .col-6
+                      i.bi.bi-person.me-1
+                      = item.producer
+                    .col-6
+                      i.bi.bi-calendar.me-1
+                      = new Date(item.createdAt).toLocaleDateString('pt-PT')
+                  
+                  if item.category
+                    .mb-2
+                      i.bi.bi-folder.me-1
+                      span.badge.bg-light.text-dark= item.category.name
+                
+                .card-footer.bg-transparent
+                  .d-flex.justify-content-between.align-items-center
+                    small.text-muted Por: #{item.submitter.name}
+                    .btn-group.btn-group-sm
+                      a.btn.btn-outline-primary(href=`/items/${item._id}`) Ver
+                      a.btn.btn-outline-secondary(href=`/items/edit/${item._id}`) Editar
+                      if item.type === 'zip'
+                        a.btn.btn-outline-success(href=`/sip/export/${item._id}`, download) 
+                          i.bi.bi-download
+                      button.btn.btn-outline-danger(onclick=`deleteItem('${item._id}', '${item.title}')`) 
+                        i.bi.bi-trash
+      else
+        .alert.alert-warning.text-center
+          h4 Nenhum conteúdo privado
+          p Seus conteúdos privados aparecerão aqui.
+          p.small Conteúdos privados só são visíveis para você.
+
+    // Aba Admin (só para administradores)
+    if user && user.isAdmin
+      .tab-pane.fade#all
+        if allItems && allItems.length > 0
+          .alert.alert-danger.mb-4
+            i.bi.bi-shield-exclamation.me-2
+            strong Área Administrativa: 
+            | Você está vendo TODOS os conteúdos do sistema (públicos e privados de todos os usuários).
+          
+          .row
+            each item in allItems
+              .col-md-6.col-lg-4.mb-4
+                .card.h-100(class=item.isPublic ? 'border-success' : 'border-danger')
+                  .card-header.d-flex.justify-content-between.align-items-center(class=item.isPublic ? 'bg-success bg-opacity-10' : 'bg-danger bg-opacity-10')
+                    h6.mb-0= item.title
+                    .d-flex.align-items-center
+                      span.badge(class=item.isPublic ? 'bg-success' : 'bg-danger').me-2= item.isPublic ? 'Público' : 'Privado'
+                      span.badge(class=item.type === 'zip' ? 'bg-info' : 'bg-secondary')= item.type
+                  
+                  .card-body
+                    if item.description
+                      p.card-text= item.description.length > 80 ? item.description.substring(0, 80) + '...' : item.description
+                    else
+                      p.text-muted.card-text Sem descrição
+                    
+                    .row.small.text-muted.mb-2
+                      .col-6
+                        i.bi.bi-person.me-1
+                        = item.producer
+                      .col-6
+                        i.bi.bi-calendar.me-1
+                        = new Date(item.createdAt).toLocaleDateString('pt-PT')
+                    
+                    if item.category
+                      .mb-2
+                        i.bi.bi-folder.me-1
+                        span.badge.bg-light.text-dark= item.category.name
+                  
+                  .card-footer.bg-transparent
+                    .d-flex.justify-content-between.align-items-center
+                      small.text-muted Por: #{item.submitter.name}
+                      .btn-group.btn-group-sm
+                        a.btn.btn-outline-primary(href=`/items/${item._id}`) Ver
+                        a.btn.btn-outline-secondary(href=`/items/edit/${item._id}`) Editar
+                        if item.type === 'zip'
+                          a.btn.btn-outline-success(href=`/sip/export/${item._id}`, download) 
+                            i.bi.bi-download
+                        button.btn.btn-outline-danger(onclick=`deleteItem('${item._id}', '${item.title}')`) 
+                          i.bi.bi-trash
+        else
+          .alert.alert-info.text-center
+            h4 Nenhum conteúdo no sistema
+            p O sistema ainda não tem conteúdos.
+
+  // Estatísticas
+  .row.mt-5
+    .col-md-4
+      .card.text-center.bg-primary.text-white
+        .card-body
+          h2= publicItems ? publicItems.length : 0
+          p.mb-0 Conteúdos Públicos
+    .col-md-4
+      .card.text-center.bg-warning.text-white
+        .card-body
+          h2= privateItems ? privateItems.length : 0
+          p.mb-0 Conteúdos Privados
+    .col-md-4
+      .card.text-center.bg-info.text-white
+        .card-body
+          h2= (publicItems ? publicItems.length : 0) + (privateItems ? privateItems.length : 0)
+          p.mb-0 Total Meus Conteúdos
+
+  script.
+    function deleteItem(itemId, itemTitle) {
+      if (confirm(`Tem certeza que deseja eliminar "${itemTitle}"?\n\nEsta ação não pode ser desfeita.`)) {
+        // Criar form para enviar DELETE via POST
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/items/delete/${itemId}`;
+        
+        document.body.appendChild(form);
+        form.submit();
+      }
+    }

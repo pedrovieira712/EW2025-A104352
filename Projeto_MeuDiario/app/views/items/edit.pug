@@ -9,6 +9,12 @@ block content
             i.bi.bi-pencil.me-2
             | Editar Item
         .card-body
+          if error
+            .alert.alert-danger= error
+          
+          if success
+            .alert.alert-success= success
+          
           if item
             form(method='POST', action=`/items/edit/${item._id}`)
               .row
@@ -28,6 +34,11 @@ block content
                       option(value='other', selected=item.type === 'other') Outro
                   
                   .mb-3
+                    label.form-label(for='producer') Produtor *
+                    input.form-control(type='text', id='producer', name='producer', value=item.producer, required)
+                
+                .col-md-6
+                  .mb-3
                     label.form-label(for='category') Categoria
                     select.form-control(id='category', name='category')
                       option(value='') Sem categoria
@@ -35,25 +46,22 @@ block content
                         each category in categories
                           option(value=category._id, selected=item.category && item.category._id === category._id)= category.name
                   
-
-                .col-md-6
                   .mb-3
                     label.form-label(for='createdAt') Data de Criação
                     input.form-control(type='date', id='createdAt', name='createdAt', value=item.createdAt ? new Date(item.createdAt).toISOString().split('T')[0] : '')
-
-                  .mb-3
-                    label.form-label(for='producer') Produtor *
-                    input.form-control(type='text', id='producer', name='producer', value=item.producer, required)
                   
-                  .mb-3.pt-3
-                    label.form-label Visibilidade
+                  .mb-3
                     .form-check
                       input.form-check-input(type='checkbox', id='isPublic', name='isPublic', checked=item.isPublic)
                       label.form-check-label(for='isPublic') Tornar público
-                  
+              
               .mb-3
                 label.form-label(for='description') Descrição
-                textarea.form-control(id='description', name='description', rows='4')= item.description || ''
+                textarea.form-control(id='description', name='description', rows='3')= item.description || ''
+              
+              .mb-3
+                label.form-label(for='tags') Tags (separadas por vírgula)
+                input.form-control(type='text', id='tags', name='tags', value=item.tags ? item.tags.join(', ') : '')
               
               if item.files && item.files.length > 0
                 .mb-3
@@ -65,12 +73,28 @@ block content
                           strong= file.originalName
                           br
                           small.text-muted= (file.size / 1024).toFixed(1) + ' KB'
-                        a.btn.btn-sm.btn-outline-primary(href=`/file/download/${file._id}`) Download
+                        a.btn.btn-sm.btn-outline-primary(href=`http://localhost:25000/file/download/${file._id}`, download) Download
               
               .d-flex.justify-content-between
-                a.btn.btn-secondary(href='/items') Cancelar
-                button.btn.btn-primary(type='submit') 
-                  i.bi.bi-save.me-1
-                  | Guardar Alterações
+                .btn-group
+                  a.btn.btn-secondary(href=`/items/${item._id}`) Voltar
+                  a.btn.btn-outline-secondary(href='/items/dashboard') Dashboard
+                .btn-group
+                  button.btn.btn-outline-danger(type='button', onclick=`confirmDelete('${item._id}', '${item.title}')`) Eliminar
+                  button.btn.btn-primary(type='submit') Guardar Alterações
           else
-            .alert.alert-danger Item não encontrado
+            .alert.alert-danger.text-center
+              h4 Item não encontrado
+              p O item que está a tentar editar não existe.
+              a.btn.btn-primary(href='/items/dashboard') Voltar ao Dashboard
+
+  script.
+    function confirmDelete(itemId, itemTitle) {
+      if (confirm(`Eliminar "${itemTitle}"?\n\nEsta ação não pode ser desfeita.`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/items/delete/${itemId}`;
+        document.body.appendChild(form);
+        form.submit();
+      }
+    }

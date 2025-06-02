@@ -32,6 +32,14 @@ block content
             .d-grid.mb-3
               button.btn.btn-primary.btn-lg(type='submit') Entrar
           
-          .text-center
+          .text-center.mb-3
+            p.text-muted Ou entre com:
+          
+          .d-grid.gap-2
+            a.btn.btn-danger.btn-lg(href='/auth/google')
+              i.bi.bi-google.me-2
+              | Entrar com Google
+          
+          .text-center.mt-3
             | Ainda sem conta? 
             a(href='/auth/register') Criar conta

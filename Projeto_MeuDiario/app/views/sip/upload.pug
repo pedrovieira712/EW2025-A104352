@@ -2,58 +2,105 @@ extends ../layout
 
 block content
   .row.justify-content-center
-    .col-md-8
-      .card
-        .card-header
-          h3 
-            i.bi.bi-upload.me-2
-            | Upload de Pacote SIP
-        .card-body
-          .alert.alert-info
-            h5 
-              i.bi.bi-info-circle.me-2
-              | Instruções:
-            ul
-              li O ficheiro deve ser um ZIP (máximo 50MB)
-              li Deve conter um <strong>manifesto-SIP.json</strong> na raiz
-              li Todos os ficheiros referenciados no manifesto devem estar incluídos
-              li O manifesto deve ter pelo menos os campos: <code>title</code> e <code>producer</code>
-          
+    .col-md-10.col-lg-12
+      // Header
+      .text-center.my-5
+        h2.mb-2 Upload de Pacote SIP
+        p.lead.text-muted Carregue um arquivo ZIP contendo seu pacote SIP
+
+      // Formulário principal
+      .card.shadow-sm.mb-4
+        .card-body.p-4
           if error
-            .alert.alert-danger
-              h5 
-                i.bi.bi-exclamation-triangle.me-2
-                | Erro no Upload
-              p= error
+            .alert.alert-danger.d-flex.align-items-center
+              i.bi.bi-exclamation-triangle.fs-4.me-3
+              div
+                h6.mb-1 Erro no Upload
+                p.mb-0= error
           
           form#sipForm(method='POST', action='/sip/upload', enctype='multipart/form-data')
-            .mb-3
-              label.form-label(for='zipFile') Selecionar Ficheiro ZIP
-              input.form-control(type='file', id='zipFile', name='zipFile', accept='.zip', required)
-              .form-text Tamanho máximo: 50MB
+            // Área de drag & drop
+            .upload-area.border.border-2.border-dashed.rounded.p-5.text-center.mb-4(style='border-color: #dee2e6; transition: all 0.3s ease;')
+              .upload-content
+                i.bi.bi-cloud-arrow-up.text-muted.mb-3(style='font-size: 3rem;')
+                h5.mb-2 Arraste seu arquivo ZIP aqui
+                p.text-muted.mb-3 ou clique para selecionar
+                input.form-control.d-none(type='file', id='zipFile', name='zipFile', accept='.zip', required)
+                button.btn.btn-outline-primary(type='button', onclick='document.getElementById("zipFile").click()')
+                  i.bi.bi-folder.me-2
+                  | Selecionar Arquivo
+                .mt-3
+                  small.text-muted Tamanho máximo: 50MB
             
+            // Informações do arquivo selecionado
+            #fileInfo.alert.alert-info(style='display: none;')
+              .d-flex.align-items-center.justify-content-between
+                div
+                  i.bi.bi-file-zip.me-2
+                  strong#fileName
+                  small.text-muted.ms-2#fileSize
+                button.btn.btn-sm.btn-outline-danger(type='button', onclick='clearFile()')
+                  i.bi.bi-x
+            
+            // Botão de submit
             .d-grid
-              button.btn.btn-success(type='submit', id='submitBtn') 
-                i.bi.bi-upload.me-1
+              button.btn.btn-success.btn-lg(type='submit', id='submitBtn', disabled) 
+                i.bi.bi-upload.me-2
                 | Processar SIP
           
           // Área de progresso
-          .mt-3#progressArea(style='display: none;')
-            .alert.alert-info
-              .d-flex.align-items-center
-                .spinner-border.spinner-border-sm.me-2(role='status')
-                span Processando SIP... Por favor aguarde.
-          
-          hr
-          
-          .row
-            .col-md-6
-              h5 Exemplo de Manifesto (manifesto-SIP.json):
-              pre.bg-light.p-3
+          #progressArea.mt-4(style='display: none;')
+            .card.bg-light
+              .card-body.text-center
+                .spinner-border.text-primary.mb-3(role='status')
+                h5.mb-2 Processando SIP...
+                p.text-muted.mb-0 Por favor aguarde enquanto validamos e extraímos os arquivos.
+                .progress.mt-3(style='height: 8px;')
+                  .progress-bar.progress-bar-striped.progress-bar-animated(style='width: 100%')
+
+      // Seção de ajuda
+      .row
+        .col-md-6
+          .card.h-100
+            .card-header.bg-light
+              h5.mb-0
+                i.bi.bi-info-circle.me-2
+                | Estrutura do SIP
+            .card-body
+              p.small.text-muted Seu arquivo ZIP deve conter:
+              .bg-light.p-3.rounded.font-monospace.small
+                | meu-sip.zip
+                br
+                | ├── manifesto-SIP.json
+                br
+                | ├── foto1.jpg
+                br
+                | ├── documento.pdf
+                br
+                | └── outros-arquivos...
+              
+              .mt-3
+                h6.small Campos obrigatórios no manifesto:
+                ul.small.mb-0
+                  li
+                    code title
+                    |  - Título do item
+                  li
+                    code producer
+                    |  - Quem criou o conteúdo
+
+        .col-md-6
+          .card.h-100
+            .card-header.bg-light
+              h5.mb-0
+                i.bi.bi-code.me-2
+                | Exemplo de Manifesto
+            .card-body
+              pre.bg-dark.text-light.p-3.rounded.small.mb-0
                 code.
                   {
                     "title": "Viagem a Paris 2025",
-                    "description": "Fotos e documentos da viagem",
+                    "description": "Fotos da viagem",
                     "type": "mixed",
                     "producer": "João Silva",
                     "createdAt": "2025-01-15",
@@ -62,65 +109,132 @@ block content
                       {
                         "filename": "foto1.jpg",
                         "description": "Torre Eiffel"
-                      },
-                      {
-                        "filename": "bilhete.pdf",
-                        "description": "Bilhete de avião"
                       }
-                    ],
-                    "metadata": {
-                      "location": "Paris, França",
-                      "event": "Férias"
-                    }
+                    ]
                   }
-            
-            .col-md-6
-              h5 Estrutura do ZIP:
-              pre.bg-light.p-3
-                code.
-                  meu-sip.zip
-                  ├── manifesto-SIP.json
-                  ├── foto1.jpg
-                  └── bilhete.pdf
-              
-              .alert.alert-warning.mt-3
-                h6 
-                  i.bi.bi-exclamation-triangle.me-2
-                  | Campos Obrigatórios:
-                ul.mb-0
-                  li <strong>title</strong>: Título do item
-                  li <strong>producer</strong>: Quem criou o conteúdo
+
+      // Dicas importantes
+      .alert.alert-warning.border-0
+        .d-flex
+          i.bi.bi-lightbulb.fs-4.me-3.text-warning
+          div
+            h6.mb-2 Dicas Importantes
+            ul.mb-0.small
+              li O arquivo deve ser um ZIP válido
+              li O manifesto deve estar na raiz do ZIP
+              li Todos os arquivos referenciados devem estar incluídos
+              li Use nomes de arquivo sem caracteres especiais
+
+  style.
+    .upload-area {
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .upload-area:hover {
+      border-color: #0d6efd !important;
+      background-color: #f8f9ff;
+    }
+    
+    .upload-area.dragover {
+      border-color: #0d6efd !important;
+      background-color: #e7f1ff;
+      transform: scale(1.02);
+    }
+    
+    .font-monospace {
+      font-family: 'Courier New', monospace;
+    }
 
   script.
-    document.getElementById('sipForm').addEventListener('submit', function(e) {
-      const fileInput = document.getElementById('zipFile');
-      const submitBtn = document.getElementById('submitBtn');
-      const progressArea = document.getElementById('progressArea');
+    // Elementos do DOM
+    const fileInput = document.getElementById('zipFile');
+    const uploadArea = document.querySelector('.upload-area');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const submitBtn = document.getElementById('submitBtn');
+    const sipForm = document.getElementById('sipForm');
+    const progressArea = document.getElementById('progressArea');
+
+    // Drag & Drop functionality
+    uploadArea.addEventListener('click', () => fileInput.click());
+    
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('dragover');
+    });
+    
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.classList.remove('dragover');
+    });
+    
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('dragover');
       
-      if (!fileInput.files[0]) {
-        e.preventDefault();
-        alert('Por favor selecione um ficheiro ZIP');
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        fileInput.files = files;
+        handleFileSelect();
+      }
+    });
+
+    // File selection handler
+    fileInput.addEventListener('change', handleFileSelect);
+
+    function handleFileSelect() {
+      const file = fileInput.files[0];
+      
+      if (!file) {
+        clearFile();
         return;
       }
       
-      const file = fileInput.files[0];
-      
       // Verificar se é ZIP
       if (!file.name.toLowerCase().endsWith('.zip')) {
-        e.preventDefault();
-        alert('Por favor selecione apenas ficheiros ZIP');
+        alert('Por favor selecione apenas arquivos ZIP');
+        clearFile();
         return;
       }
       
       // Verificar tamanho (50MB)
       if (file.size > 50 * 1024 * 1024) {
+        alert('Arquivo muito grande. Máximo permitido: 50MB');
+        clearFile();
+        return;
+      }
+      
+      // Mostrar informações do arquivo
+      fileName.textContent = file.name;
+      fileSize.textContent = `(${(file.size / 1024 / 1024).toFixed(1)} MB)`;
+      fileInfo.style.display = 'block';
+      uploadArea.style.display = 'none';
+      submitBtn.disabled = false;
+    }
+
+    function clearFile() {
+      fileInput.value = '';
+      fileInfo.style.display = 'none';
+      uploadArea.style.display = 'block';
+      submitBtn.disabled = true;
+    }
+
+    // Form submission
+    sipForm.addEventListener('submit', function(e) {
+      const file = fileInput.files[0];
+      
+      if (!file) {
         e.preventDefault();
-        alert('Ficheiro muito grande. Máximo permitido: 50MB');
+        alert('Por favor selecione um arquivo ZIP');
         return;
       }
       
       // Mostrar progresso
       submitBtn.disabled = true;
-      submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Processando...';
+      submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Processando...';
       progressArea.style.display = 'block';
+      
+      // Scroll para o progresso
+      progressArea.scrollIntoView({ behavior: 'smooth' });
     });

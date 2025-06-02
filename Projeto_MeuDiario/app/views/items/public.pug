@@ -1,84 +1,155 @@
 extends ../layout
 
 block content
-  .d-flex.justify-content-between.align-items-center.mb-4
-    h1 
-      | Conteúdos
-    if user
-      a.btn.btn-success(href='/sip/upload')   
-        | Upload SIP
+  // Header com título e ações
+  .card.bg-light.border-0.shadow-sm.mb-4
+    .card-body.p-4
+      .row.align-items-center
+        .col-md-6
+          h2.mb-0
+            i.bi.bi-collection.me-2.text-primary
+            | Conteúdos Públicos
+        .col-md-6
+          .d-flex.justify-content-md-end.mt-3.mt-md-0
+            if user
+              a.btn.btn-primary.me-2(href='/items/dashboard') 
+                i.bi.bi-grid.me-1
+                | Meus Conteúdos
+              a.btn.btn-success(href='/sip/upload')   
+                i.bi.bi-upload.me-1
+                | Upload SIP
 
-  // Cards de estatísticas - só para utilizadores logados
+
   if user
     .row.mb-4
       .col-md-4
-        .card.text-center.bg-primary.text-white
-          .card-body
-            h2= items ? items.length : 0
-            p.mb-0 Total Items
+        .card.border-0.shadow-sm.text-center.p-3
+          .display-4.text-primary.mb-2= items ? items.length : 0
+          p.mb-0.text-muted Total Items
       .col-md-4
-        .card.text-center.bg-success.text-white
-          .card-body
-            h2= items ? items.filter(i => i.isPublic).length : 0
-            p.mb-0 Públicos
+        .card.border-0.shadow-sm.text-center.p-3
+          .display-4.text-success.mb-2= items ? items.filter(i => i.isPublic).length : 0
+          p.mb-0.text-muted Públicos
       .col-md-4
-        .card.text-center.bg-warning.text-white
-          .card-body
-            h2= items ? items.filter(i => !i.isPublic && (i.submitter._id === user.id || user.isAdmin)).length : 0
-            p.mb-0 Meus Privados
+        .card.border-0.shadow-sm.text-center.p-3
+          .display-4.text-warning.mb-2= items ? items.filter(i => i.isPublic && (i.submitter._id === user.id)).length : 0
+          p.mb-0.text-muted Meus Conteúdos
 
   // Lista de conteúdos
   if items && items.length > 0
-    .row
+    .row#itemsContainer
       each item in items
         // Mostrar apenas públicos para não logados, todos para logados
         if item.isPublic || (user && (item.submitter._id === user.id || user.isAdmin))
-          .col-md-6.col-lg-4.mb-4
-            .card.h-100
-              .card-header.d-flex.justify-content-between.align-items-center
-                h6.mb-0= item.title
+          .col-md-6.col-lg-4.mb-4.item-card(
+            data-date=item.createdAt,
+            data-title=item.title
+          )
+            .card.h-100.border-0.shadow-sm.hover-effect
+              .card-header.d-flex.justify-content-between.align-items-center.bg-light.py-3
+                h5.mb-0.text-truncate(title=item.title)= item.title
                 .d-flex.align-items-center
-                  span.badge(class=item.type === 'zip' ? 'bg-info' : 'bg-secondary').me-2= item.type
+                  span.badge.rounded-pill(class=item.type === 'photo' ? 'bg-info' : item.type === 'text' ? 'bg-secondary' : item.type === 'mixed' ? 'bg-warning' : 'bg-primary').me-2= item.type
                   if !item.isPublic
-                    span.badge.bg-warning Privado
+                    span.badge.bg-danger.rounded-pill
+                      i.bi.bi-lock.me-1
+                      | Privado
               
               .card-body
                 if item.description
-                  p.card-text= item.description.length > 80 ? item.description.substring(0, 80) + '...' : item.description
+                  p.card-text= item.description.length > 100 ? item.description.substring(0, 100) + '...' : item.description
                 else
-                  p.text-muted.card-text Sem descrição
+                  p.text-muted.card-text.fst-italic Sem descrição
                 
-                .row.small.text-muted.mb-2
-                  .col-6
-                    i.bi.bi-person.me-1
-                    = item.producer
-                  .col-6
-                    i.bi.bi-calendar.me-1
-                    = new Date(item.createdAt).toLocaleDateString('pt-PT')
+                .d-flex.align-items-center.mb-3
+                  i.bi.bi-person-circle.text-muted.me-2
+                  span= item.producer
+                
+                .d-flex.align-items-center.mb-3
+                  i.bi.bi-calendar-event.text-muted.me-2
+                  span= new Date(item.createdAt).toLocaleDateString('pt-PT')
                 
                 if item.category
-                  .mb-2
-                    i.bi.bi-folder.me-1
+                  .d-flex.align-items-center.mb-3
+                    i.bi.bi-folder.text-muted.me-2
                     span.badge.bg-light.text-dark= item.category.name
+                
+                if item.tags && item.tags.length > 0
+                  .mb-3
+                    each tag in item.tags.slice(0, 3)
+                      span.badge.bg-primary.text-white.me-1= tag
+                    if item.tags.length > 3
+                      span.badge.bg-primary.text-white +#{item.tags.length - 3}
               
-              .card-footer.bg-transparent
+              .card-footer.bg-white.border-top-0
                 .d-flex.justify-content-between.align-items-center
-                  small.text-muted= item.submitter.name
-                  .btn-group.btn-group-sm
-                    a.btn.btn-outline-primary(href=`/items/${item._id}`) Ver
+                  small.text-muted
+                    | Por #{item.submitter.name}
+                  .btn-group
+                    a.btn.btn-sm.btn-primary(href=`/items/${item._id}`) 
+                      i.bi.bi-eye.me-1
+                      | Ver
                     if user && (user.id === item.submitter._id || user.isAdmin)
-                      a.btn.btn-outline-secondary(href=`/items/edit/${item._id}`) Editar
+                      a.btn.btn-sm.btn-outline-secondary(href=`/items/edit/${item._id}`) 
+                        i.bi.bi-pencil.me-1
+                        | Editar
                     if item.type === 'zip'
-                      a.btn.btn-outline-success(href=`/sip/export/${item._id}`, download) 
-                        i.bi.bi-download
+                      a.btn.btn-sm.btn-outline-success(href=`/sip/export/${item._id}`, download) 
+                        i.bi.bi-download.me-1
+                        | Exportar
   else
     .alert.alert-info.text-center.py-5
-      i.bi.bi-inbox.display-1.text-muted.mb-3
+      i.bi.bi-inbox.display-1.text-muted.mb-3.d-block
       if user
         h4 Ainda não tem conteúdos
-        p Comece por fazer upload de um SIP
-        a.btn.btn-success(href='/sip/upload') Primeiro Upload
+        p.text-muted.mb-4 Comece por fazer upload de um SIP ou criar um novo item
+        .d-flex.justify-content-center.gap-3
+          a.btn.btn-success(href='/sip/upload') 
+            i.bi.bi-upload.me-2
+            | Upload SIP
+          a.btn.btn-primary(href='/items/new') 
+            i.bi.bi-plus.me-2
+            | Novo Item
       else
         h4 Ainda não há conteúdos públicos
-        p Registe-se para começar a partilhar
-        a.btn.btn-primary(href='/auth/register') Registar
+        p.text-muted.mb-4 Registe-se para começar a partilhar
+        a.btn.btn-primary.btn-lg(href='/auth/register') 
+          i.bi.bi-person-plus.me-2
+          | Registar-se
+
+  style.
+    .hover-effect {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .hover-effect:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+    .card-header h5 {
+      max-width: 70%;
+    }
+    .badge {
+      font-weight: 500;
+      padding: 0.5em 0.8em;
+    }
+
+  script.
+    function sortItems() {
+      const container = document.getElementById('itemsContainer');
+      const items = Array.from(container.getElementsByClassName('item-card'));
+      const sortBy = document.getElementById('sortItems').value;
+      
+      items.sort((a, b) => {
+        if (sortBy === 'recent') {
+          return new Date(b.dataset.date) - new Date(a.dataset.date);
+        } else if (sortBy === 'oldest') {
+          return new Date(a.dataset.date) - new Date(b.dataset.date);
+        } else if (sortBy === 'az') {
+          return a.dataset.title.localeCompare(b.dataset.title);
+        } else if (sortBy === 'za') {
+          return b.dataset.title.localeCompare(a.dataset.title);
+        }
+      });
+      
+      items.forEach(item => container.appendChild(item));
+    }

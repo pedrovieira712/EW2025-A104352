@@ -1,40 +1,54 @@
 extends ../layout
 
 block content
-  .d-flex.justify-content-between.align-items-center.mb-4
-    h1 
-      i.bi.bi-graph-up.me-2
-      | Estatísticas do Sistema
-    a.btn.btn-outline-primary(href='/admin') Voltar ao Admin
+  .card.border-0.shadow-sm.mb-4
+    .card-body.p-4.bg-secondary.rounded-3
+      .d-flex.justify-content-between.align-items-center.mb-4
+        h2.text-white
+          | Estatísticas
+        a.btn.btn-outline-primary(href='/admin')
+          i.bi.bi-arrow-left.me-2
+          | Voltar
 
-  if stats
-    .row.mb-4
-      .col-md-3
-        .card.text-center.bg-primary.text-white
-          .card-body
-            h2= stats.total || 0
-            p.mb-0 Total de Logs
-      .col-md-3
-        .card.text-center.bg-success.text-white
-          .card-body
-            h2= stats.actionStats ? stats.actionStats.filter(a => a._id === 'view')[0]?.count || 0 : 0
-            p.mb-0 Visualizações
-      .col-md-3
-        .card.text-center.bg-info.text-white
-          .card-body
-            h2= stats.actionStats ? stats.actionStats.filter(a => a._id === 'download')[0]?.count || 0 : 0
-            p.mb-0 Downloads
-      .col-md-3
-        .card.text-center.bg-warning.text-white
-          .card-body
-            h2= stats.actionStats ? stats.actionStats.filter(a => a._id === 'upload')[0]?.count || 0 : 0
-            p.mb-0 Uploads
+      if stats
+        // Cards de estatísticas principais
+        .row.g-4.mb-4
+          .col-md-3
+            .card.border-0.shadow-sm.text-center.p-3
+              .display-4.text-primary.mb-2= stats.total || 0
+              p.mb-0 Total de Logs
+          .col-md-3
+            .card.border-0.shadow-sm.text-center.p-3
+              - var viewCount = 0
+              - if (stats.actionStats) {
+              -   var viewStat = stats.actionStats.filter(function(a) { return a._id === 'view'; })[0]
+              -   if (viewStat) viewCount = viewStat.count
+              - }
+              .display-4.text-success.mb-2= viewCount
+              p.mb-0 Visualizações
+          .col-md-3
+            .card.border-0.shadow-sm.text-center.p-3
+              - var downloadCount = 0
+              - if (stats.actionStats) {
+              -   var downloadStat = stats.actionStats.filter(function(a) { return a._id === 'download'; })[0]
+              -   if (downloadStat) downloadCount = downloadStat.count
+              - }
+              .display-4.text-info.mb-2= downloadCount
+              p.mb-0 Downloads
+          .col-md-3
+            .card.border-0.shadow-sm.text-center.p-3
+              - var uploadCount = 0
+              - if (stats.actionStats) {
+              -   var uploadStat = stats.actionStats.filter(function(a) { return a._id === 'upload'; })[0]
+              -   if (uploadStat) uploadCount = uploadStat.count
+              - }
+              .display-4.text-warning.mb-2= uploadCount
+              p.mb-0 Uploads
 
-    .row
-      .col-md-6
-        .card
-          .card-header
-            h5.mb-0 Ações por Tipo
+        // Ações por tipo
+        .card.border-0.shadow-sm.mb-4
+          .card-header.bg-light.border-0.py-3
+            h5.mb-0 Distribuição de Ações
           .card-body
             if stats.actionStats && stats.actionStats.length > 0
               .table-responsive
@@ -52,81 +66,33 @@ block content
                         td= action.count
                         td= ((action.count / stats.total) * 100).toFixed(1) + '%'
             else
-              p.text-muted Nenhuma atividade registada
+              .alert.alert-info.text-center
+                i.bi.bi-info-circle.me-2
+                | Nenhuma atividade registada no sistema
 
-      .col-md-6
-        .card
-          .card-header
-            h5.mb-0 Atividade Diária (Últimos 7 dias)
+        // Utilizadores mais ativos
+        .card.border-0.shadow-sm
+          .card-header.bg-light.border-0.py-3
+            h5.mb-0 Utilizadores Mais Ativos
           .card-body
-            if stats.dailyStats && stats.dailyStats.length > 0
+            if stats.topUsers && stats.topUsers.length > 0
               .table-responsive
                 table.table.table-sm
                   thead
                     tr
-                      th Data
-                      th Atividades
+                      th Utilizador
+                      th Total de Ações
                   tbody
-                    each day in stats.dailyStats
+                    each userStat in stats.topUsers.slice(0, 10)
                       tr
-                        td= `${day._id.day}/${day._id.month}/${day._id.year}`
-                        td
-                          .progress(style='height: 20px;')
-                            .progress-bar(style=`width: ${(day.count / Math.max(...stats.dailyStats.map(d => d.count))) * 100}%`)= day.count
+                        td User ID: #{userStat._id}
+                        td #{userStat.count}
             else
-              p.text-muted Nenhuma atividade nos últimos 7 dias
-
-    .row.mt-4
-      .col-md-6
-        .card
-          .card-header
-            h5.mb-0 Items Mais Vistos
-          .card-body
-            if stats.topItems && stats.topItems.length > 0
-              .list-group.list-group-flush
-                each item in stats.topItems.slice(0, 5)
-                  .list-group-item.d-flex.justify-content-between.align-items-center
-                    span Item ID: #{item._id}
-                    span.badge.bg-primary.rounded-pill= item.count + ' views'
-            else
-              p.text-muted Nenhum item visualizado ainda
-
-      .col-md-6
-        .card
-          .card-header
-            h5.mb-0 Utilizadores Mais Ativos
-          .card-body
-            if stats.topUsers && stats.topUsers.length > 0
-              .list-group.list-group-flush
-                each userStat in stats.topUsers.slice(0, 5)
-                  .list-group-item.d-flex.justify-content-between.align-items-center
-                    span User ID: #{userStat._id}
-                    span.badge.bg-success.rounded-pill= userStat.count + ' ações'
-            else
-              p.text-muted Nenhuma atividade de utilizadores
-
-    .row.mt-4
-      .col-12
-        .card
-          .card-header.d-flex.justify-content-between.align-items-center
-            h5.mb-0 Exportar Dados
-            .btn-group
-              a.btn.btn-outline-primary.btn-sm(href='/admin/logs/export') Exportar Logs
-              button.btn.btn-outline-success.btn-sm#exportStats Exportar Estatísticas
-          .card-body
-            p Exporte os dados do sistema para análise externa ou backup.
-            .alert.alert-info.mb-0
-              small 
-                i.bi.bi-info-circle.me-1
-                | Os logs são exportados em formato JSON e contêm informações detalhadas sobre todas as atividades do sistema.
-
-  else
-    .alert.alert-warning
-      h4 Erro ao carregar estatísticas
-      p Não foi possível obter os dados estatísticos do sistema.
-
-  script.
-    document.getElementById('exportStats')?.addEventListener('click', function() {
-      // Implementar exportação de estatísticas
-      alert('Funcionalidade de exportação de estatísticas em desenvolvimento');
-    });
+              .alert.alert-info.text-center
+                i.bi.bi-info-circle.me-2
+                | Nenhuma atividade de utilizadores registada
+      else
+        .alert.alert-warning.text-center
+          i.bi.bi-exclamation-triangle.display-4.mb-3.text-warning
+          h4 Erro ao carregar estatísticas
+          p Não foi possível obter os dados estatísticos do sistema.

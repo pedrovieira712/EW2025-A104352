@@ -1,52 +1,139 @@
 extends ../layout
 
 block content
-  h1.mb-4 
-    i.bi.bi-gear.me-2
-    | Painel de Administração
-
+  // Header da página
   .row.mb-4
-    .col-md-3
-      .card.text-center.bg-primary.text-white
-        .card-body
-          h2= stats.users
-          p.mb-0 Utilizadores
-    .col-md-3
-      .card.text-center.bg-success.text-white
-        .card-body
-          h2= stats.items
-          p.mb-0 Items
-    .col-md-3
-      .card.text-center.bg-warning.text-white
-        .card-body
-          h2= stats.categories
-          p.mb-0 Categorias
-    .col-md-3
-      .card.text-center.bg-info.text-white
-        .card-body
-          h2= stats.logs
-          p.mb-0 Logs
+    .col-12
+      .card.bg-gradient.bg-primary.text-white.border-0.shadow
+        .card-body.text-center.py-4
+          i.bi.bi-shield-check.display-4.mb-3
+          h1.mb-2 Painel de Administração
+          p.lead.mb-0 Gerir utilizadores, conteúdos e sistema
 
-  .row
+  // Cards de estatísticas
+  .row.g-4.mb-5
+    .col-md-3
+      .card.border-0.shadow-sm.h-100
+        .card-body.text-center.p-4
+          .bg-primary.bg-opacity-10.rounded-circle.d-inline-flex.align-items-center.justify-content-center.mb-3(style='width: 60px; height: 60px;')
+            i.bi.bi-people.fs-3.text-primary
+          h2.fw-bold.text-primary.mb-1= stats.users
+          p.text-muted.mb-0 Utilizadores
+    
+    .col-md-3
+      .card.border-0.shadow-sm.h-100
+        .card-body.text-center.p-4
+          .bg-success.bg-opacity-10.rounded-circle.d-inline-flex.align-items-center.justify-content-center.mb-3(style='width: 60px; height: 60px;')
+            i.bi.bi-file-earmark.fs-3.text-success
+          h2.fw-bold.text-success.mb-1= stats.items
+          p.text-muted.mb-0 Conteúdos
+    
+    .col-md-3
+      .card.border-0.shadow-sm.h-100
+        .card-body.text-center.p-4
+          .bg-warning.bg-opacity-10.rounded-circle.d-inline-flex.align-items-center.justify-content-center.mb-3(style='width: 60px; height: 60px;')
+            i.bi.bi-folder.fs-3.text-warning
+          h2.fw-bold.text-warning.mb-1= stats.categories
+          p.text-muted.mb-0 Categorias
+    
+    .col-md-3
+      .card.border-0.shadow-sm.h-100
+        .card-body.text-center.p-4
+          .bg-info.bg-opacity-10.rounded-circle.d-inline-flex.align-items-center.justify-content-center.mb-3(style='width: 60px; height: 60px;')
+            i.bi.bi-activity.fs-3.text-info
+          h2.fw-bold.text-info.mb-1= stats.logs
+          p.text-muted.mb-0 Logs
+
+  // Ações principais
+  .row.g-4
     .col-md-6
-      .card
-        .card-header
-          h5.mb-0 Ações Rápidas
-        .card-body
-          .d-grid.gap-2
-            a.btn.btn-outline-primary(href='/admin/users') Gerir Utilizadores
-            a.btn.btn-outline-success(href='/admin/categories') Gerir Categorias
-            a.btn.btn-outline-info(href='/admin/logs') Ver Logs
-            a.btn.btn-outline-warning(href='/admin/stats') Estatísticas
+      .card.border-0.shadow-sm.h-100
+        .card-header.bg-light.border-0.py-3
+          h5.mb-0.d-flex.align-items-center
+            i.bi.bi-lightning.me-2.text-primary
+            | Ações Rápidas
+        .card-body.p-4
+          .d-grid.gap-3
+            a.btn.btn-outline-primary.btn-lg.d-flex.align-items-center.justify-content-start(href='/admin/users')
+              i.bi.bi-people.me-3.fs-4
+              div.text-start
+                div.fw-semibold Gerir Utilizadores
+                small.text-muted Ver e administrar contas de utilizador
+            
+            a.btn.btn-outline-success.btn-lg.d-flex.align-items-center.justify-content-start(href='/admin/categories')
+              i.bi.bi-folder.me-3.fs-4
+              div.text-start
+                div.fw-semibold Gerir Categorias
+                small.text-muted Organizar e criar categorias
+            
+            a.btn.btn-outline-info.btn-lg.d-flex.align-items-center.justify-content-start(href='/admin/logs')
+              i.bi.bi-journal-text.me-3.fs-4
+              div.text-start
+                div.fw-semibold Ver Logs
+                small.text-muted Monitorizar atividade do sistema
+            
+            a.btn.btn-outline-warning.btn-lg.d-flex.align-items-center.justify-content-start(href='/admin/stats')
+              i.bi.bi-graph-up.me-3.fs-4
+              div.text-start
+                div.fw-semibold Estatísticas
+                small.text-muted Relatórios e análises
     
     .col-md-6
-      .card
-        .card-header
-          h5.mb-0 Sistema
-        .card-body
-          p Status: 
-            span.badge.bg-success Online
-          p Última atualização: 
-            = new Date().toLocaleDateString('pt-PT')
+      .card.border-0.shadow-sm.h-100
+        .card-header.bg-light.border-0.py-3
+          h5.mb-0.d-flex.align-items-center
+            i.bi.bi-gear.me-2.text-success
+            | Estado do Sistema
+        .card-body.p-4
+          .d-flex.align-items-center.justify-content-between.mb-4
+            div
+              h6.mb-1 Status do Servidor
+              small.text-muted Sistema operacional
+            span.badge.bg-success.px-3.py-2
+              i.bi.bi-check-circle.me-1
+              | Online
+          
+          .d-flex.align-items-center.justify-content-between.mb-4
+            div
+              h6.mb-1 Base de Dados
+              small.text-muted Conexão MongoDB
+            span.badge.bg-success.px-3.py-2
+              i.bi.bi-database.me-1
+              | Conectada
+          
+          .d-flex.align-items-center.justify-content-between.mb-4
+            div
+              h6.mb-1 Última Atualização
+              small.text-muted= new Date().toLocaleDateString('pt-PT')
+            span.badge.bg-light.text-dark.px-3.py-2
+              i.bi.bi-clock.me-1
+              | Hoje
+          
+          hr.my-4
+          
           .d-grid
-            a.btn.btn-outline-danger(href='/admin/logs/export') Exportar Logs
+            a.btn.btn-outline-danger(href='/admin/logs/export')
+              i.bi.bi-download.me-2
+              | Exportar Logs do Sistema
+
+  style.
+    .bg-gradient {
+      background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    }
+    
+    .card {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+    }
+    
+    .btn-outline-primary:hover,
+    .btn-outline-success:hover,
+    .btn-outline-info:hover,
+    .btn-outline-warning:hover {
+      transform: translateX(5px);
+      transition: transform 0.2s ease;
+    }

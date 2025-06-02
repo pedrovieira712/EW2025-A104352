@@ -19,7 +19,10 @@ html
         .collapse.navbar-collapse#navbarNav
           ul.navbar-nav.me-auto
             li.nav-item
-                a.nav-link(href='/items/') Conteúdos
+              a.nav-link(href='/items/') Conteúdos Públicos
+            if user
+              li.nav-item
+                a.nav-link(href='/items/dashboard') Meus Conteúdos
             li.nav-item
               a.nav-link(href='/categories') Categorias
             li.nav-item
@@ -36,7 +39,10 @@ html
             if user
               li.nav-item.dropdown
                 a.nav-link.dropdown-toggle(href='#', role='button', data-bs-toggle='dropdown')
-                  i.bi.bi-person-circle.me-1
+                  if user.profilePicture
+                    img.rounded-circle.me-1(src=user.profilePicture, alt=user.name, style='width: 24px; height: 24px;')
+                  else
+                    i.bi.bi-person-circle.me-1
                   = user.name
                 ul.dropdown-menu
                   li: a.dropdown-item(href='/auth/logout') Logout

@@ -21,16 +21,6 @@ var itemSchema = new mongoose.Schema({
     // Ficheiros associados
     files: [{ type: mongoose.Schema.Types.ObjectId, ref: 'File' }],
     
-    // Metadados adicionais (flexível)
-    metadata: {
-        location: String,
-        event: String,
-        duration: String,
-        participants: [String],
-        weather: String,
-        mood: String
-    },
-    
     // Para integração redes sociais
     sharedOn: {
         facebook: { shared: Boolean, url: String },

@@ -2,16 +2,37 @@ extends ../layout
 
 block content
   if item
+    if success
+      .alert.alert-success.alert-dismissible.fade.show.mb-4
+        .d-flex.align-items-center
+          i.bi.bi-check-circle.fs-4.me-3
+          div
+            h6.mb-1 Sucesso!
+            p.mb-0= success
+        button.btn-close(type='button', data-bs-dismiss='alert')
+
+    if error
+      .alert.alert-danger.alert-dismissible.fade.show.mb-4
+        .d-flex.align-items-center
+          i.bi.bi-exclamation-triangle.fs-4.me-3
+          div
+            h6.mb-1 Erro!
+            p.mb-0= error
+        button.btn-close(type='button', data-bs-dismiss='alert')
     .row
       .col-md-8
-        .card
+        .card.mb-4
           .card-header.d-flex.justify-content-between.align-items-center
             h3.mb-0= item.title
             .btn-group
               if user && (user.id === item.submitter._id || user.isAdmin)
-                a.btn.btn-outline-secondary.btn-sm(href=`/items/edit/${item._id}`) Editar
+                a.btn.btn-outline-secondary.btn-sm(href=`/items/edit/${item._id}`) 
+                  i.bi.bi-pencil.me-1
+                  | Editar
               if item.type === 'zip'
-                a.btn.btn-outline-success.btn-sm(href=`/sip/export/${item._id}`) Exportar
+                a.btn.btn-outline-success.btn-sm(href=`/sip/export/${item._id}`) 
+                  i.bi.bi-download.me-1
+                  | Exportar
           
           .card-body
             if item.description
@@ -19,29 +40,41 @@ block content
             
             .row.mb-3
               .col-md-6
-                strong Tipo: 
-                span.badge(class=item.type === 'zip' ? 'bg-info' : 'bg-secondary')= item.type
+                strong 
+                  i.bi.bi-tag.me-1
+                  | Tipo: 
+                span.badge(class=item.type === 'photo' ? 'bg-info' : item.type === 'document' ? 'bg-secondary' : item.type === 'text' ? 'bg-primary' : item.type === 'mixed' ? 'bg-warning' : 'bg-secondary')= item.type
               .col-md-6
-                strong Categoria: 
+                strong 
+                  i.bi.bi-folder.me-1
+                  | Categoria: 
                 if item.category
-                  a(href=`/categories/${item.category._id}`)= item.category.name
+                  a.badge.bg-light.text-dark(href=`/categories/${item.category._id}`)= item.category.name
                 else
                   span.text-muted Sem categoria
             
             .row.mb-3
               .col-md-6
-                strong Produtor: 
+                strong 
+                  i.bi.bi-person.me-1
+                  | Produtor: 
                 = item.producer
               .col-md-6
-                strong Data: 
+                strong 
+                  i.bi.bi-calendar.me-1
+                  | Data: 
                 = new Date(item.createdAt).toLocaleDateString('pt-PT')
             
             .row.mb-3
               .col-md-6
-                strong Submissor: 
+                strong 
+                  i.bi.bi-person-badge.me-1
+                  | Submissor: 
                 = item.submitter.name
               .col-md-6
-                strong Visibilidade: 
+                strong 
+                  i.bi.bi-eye.me-1
+                  | Visibilidade: 
                 if item.isPublic
                   span.badge.bg-success Público
                 else
@@ -49,82 +82,107 @@ block content
             
             if item.tags && item.tags.length > 0
               .mb-3
-                strong Tags: 
+                strong 
+                  i.bi.bi-tags.me-1
+                  | Tags: 
                 each tag in item.tags
                   span.badge.bg-light.text-dark.me-1= tag
             
             if item.metadata && Object.keys(item.metadata).length > 0
               .mb-3
-                strong Metadados:
-                .mt-2
+                strong 
+                  i.bi.bi-info-circle.me-1
+                  | Metadados:
+                .mt-2.bg-light.p-3.rounded
                   each value, key in item.metadata
-                    .row
-                      .col-md-3
-                        strong= key + ':'
-                      .col-md-9= value
+                    .row.mb-1
+                      .col-md-4.fw-bold= key + ':'
+                      .col-md-8= value
+        
+        // Seção de arquivos
+        if item.files && item.files.length > 0
+          .card.mb-4
+            .card-header
+              h5.mb-0 
+                i.bi.bi-files.me-2
+                | Arquivos
+                span.badge.bg-secondary.ms-2= item.files.length
             
-            if item.files && item.files.length > 0
-              h5.mt-4 Ficheiros
+            .card-body
               .row
                 each file in item.files
-                  .col-md-6.mb-2
-                    .card
-                      .card-body.p-2
-                        .d-flex.justify-content-between.align-items-center
-                          div
-                            strong= file.originalName
-                            br
-                            small.text-muted= (file.size / 1024).toFixed(1) + ' KB'
-                            br
-                            small.text-muted= file.fileType
-                          // Download direto da API
+                  .col-md-6.mb-3
+                    .card.h-100
+                      .card-body
+                        .d-flex.justify-content-between.align-items-center.mb-2
+                          h6.mb-0.text-truncate(title=file.originalName)
+                            if file.fileType === 'image'
+                              i.bi.bi-image.me-2
+                            else if file.fileType === 'document'
+                              i.bi.bi-file-text.me-2
+                            else if file.fileType === 'video'
+                              i.bi.bi-film.me-2
+                            else if file.fileType === 'audio'
+                              i.bi.bi-music-note.me-2
+                            else
+                              i.bi.bi-file-earmark.me-2
+                            = file.originalName
+                          span.badge(class=file.fileType === 'image' ? 'bg-info' : file.fileType === 'document' ? 'bg-secondary' : file.fileType === 'video' ? 'bg-danger' : file.fileType === 'audio' ? 'bg-success' : 'bg-dark')= file.fileType
+                        
+                        .small.text-muted.mb-2
+                          | Tamanho: #{(file.size / 1024).toFixed(1)} KB
+                        
+                        // Preview para imagens
+                        if file.fileType === 'image'
+                          .text-center.mb-2
+                            img.img-fluid.rounded(src=`http://localhost:25000/file/preview/${file._id}`, alt=file.originalName, style="max-height: 150px;")
+                        
+                        .d-grid
                           a.btn.btn-primary.btn-sm(href=`http://localhost:25000/file/download/${file._id}`, download, target='_blank') 
                             i.bi.bi-download.me-1
                             | Download
       
       .col-md-4
-        .card
-          .card-header
-            h5.mb-0 
-              i.bi.bi-chat.me-2
+        // Seção de comentários
+        .card.mb-4
+          .card-header.bg-light
+            h5.mb-0.d-flex.align-items-center 
+              i.bi.bi-chat-square-text.me-2
               | Comentários
-              if comments
+              if comments && comments.length > 0
                 span.badge.bg-primary.ms-2= comments.length
+          
           .card-body
             // Verificar se pode comentar
             - var canComment = user && (item.isPublic || user.id === item.submitter._id || user.isAdmin)
             
             if canComment
-              .alert.alert-info.small
-                i.bi.bi-info-circle.me-2
-                | Os comentários ajudam a qualificar e contextualizar este item.
-              
               form(method='POST', action='/comment')
                 input(type='hidden', name='itemId', value=item._id)
                 .mb-3
-                  label.form-label Comentário
-                  textarea.form-control(name='content', rows='3', placeholder='Adicionar comentário...', required)
+                  label.form-label(for='content') Comentário
+                  textarea.form-control#content(name='content', rows='3', placeholder='Adicionar comentário...', required)
                 .mb-3
-                  label.form-label Tipo de Comentário
-                  select.form-select(name='type')
-                    option(value='note') 📝 Nota Geral
-                    option(value='context') 🌍 Contexto Histórico
-                    option(value='application') 🎯 Aplicação/Uso
-                    option(value='correction') ✏️ Correção
-                    option(value='enhancement') ⭐ Melhoria
+                  label.form-label(for='type') Tipo de Comentário
+                  select.form-select#type(name='type')
+                    option(value='note') Nota Geral
+                    option(value='context') Contexto Histórico
+                    option(value='application') Aplicação/Uso
+                    option(value='correction') Correção
+                    option(value='enhancement') Melhoria
                   .form-text Escolha o tipo que melhor descreve seu comentário
-                button.btn.btn-primary.btn-sm(type='submit') 
+                button.btn.btn-primary.w-100(type='submit') 
                   i.bi.bi-plus.me-1
                   | Adicionar Comentário
               hr
             else if !user
-              .alert.alert-warning.text-center
+              .alert.alert-warning.text-center.mb-3
                 i.bi.bi-lock.me-2
                 | Faça login para comentar
                 br
                 a.btn.btn-primary.btn-sm.mt-2(href='/auth/login') Login
             else if !item.isPublic
-              .alert.alert-info.text-center
+              .alert.alert-info.text-center.mb-3
                 i.bi.bi-eye-slash.me-2
                 | Item privado - apenas o autor pode comentar
             
@@ -137,15 +195,26 @@ block content
                       .comment-header
                         .d-flex.align-items-center
                           strong= comment.userId.name
-                          if comment.type !== 'note'
-                            span.badge.bg-secondary.ms-2= getCommentTypeLabel(comment.type)
+                          case comment.type
+                            when 'context'
+                              span.badge.bg-secondary.ms-2 Contexto
+                            when 'application' 
+                              span.badge.bg-secondary.ms-2 Aplicação
+                            when 'correction'
+                              span.badge.bg-secondary.ms-2 Correção
+                            when 'enhancement'
+                              span.badge.bg-secondary.ms-2 Melhoria
+                            default
+                              span.badge.bg-secondary.ms-2 Nota
                         small.text-muted= new Date(comment.createdAt).toLocaleDateString('pt-PT') + ' às ' + new Date(comment.createdAt).toLocaleTimeString('pt-PT')
                       
-                      // Ações do comentário - APENAS ELIMINAR
+                      // Ações do comentário
                       if user && (user.id === comment.userId._id || user.isAdmin)
-                        button.btn.btn-sm.btn-outline-danger(onclick=`deleteComment('${comment._id}', '${item._id}')`) 
-                          i.bi.bi-trash.me-1
-                          | Eliminar
+                        form.d-inline(method='POST', action=`/comment/${comment._id}/delete`, onsubmit='return confirm("Tem certeza que deseja eliminar este comentário?")')
+                          input(type='hidden', name='itemId', value=item._id)
+                          button.btn.btn-sm.btn-outline-danger(type='submit') 
+                            i.bi.bi-trash.me-1
+                            | Eliminar
                     
                     .comment-content
                       p.mb-0= comment.content
@@ -156,33 +225,5 @@ block content
                 if canComment
                   p.small Seja o primeiro a comentar!
 
-  script.
-    // Função para obter label do tipo de comentário
-    function getCommentTypeLabel(type) {
-      switch(type) {
-        case 'context': return '🌍 Contexto';
-        case 'application': return '🎯 Aplicação';
-        case 'correction': return '✏️ Correção';
-        case 'enhancement': return '⭐ Melhoria';
-        default: return '📝 Nota';
-      }
-    }
-    
-    // Função para eliminar comentário
-    function deleteComment(commentId, itemId) {
-      if (confirm('Tem certeza que deseja eliminar este comentário?')) {
-        // Criar form temporário para DELETE
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/comment/${commentId}/delete`;
-        
-        const itemInput = document.createElement('input');
-        itemInput.type = 'hidden';
-        itemInput.name = 'itemId';
-        itemInput.value = itemId;
-        form.appendChild(itemInput);
-        
-        document.body.appendChild(form);
-        form.submit();
-      }
-    }
+  else
+    .alert.alert-danger Item não encontrado

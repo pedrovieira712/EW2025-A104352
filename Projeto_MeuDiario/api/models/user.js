@@ -10,7 +10,8 @@ var userSchema = new mongoose.Schema({
 
     // Para autenticação social (passport)
     facebookId: String,
-    googleId: String
+    googleId: String,
+    profilePicture: String
 }, {versionKey: false});
 
 module.exports = mongoose.model('User', userSchema);

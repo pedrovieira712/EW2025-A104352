@@ -1,0 +1,69 @@
+extends ../layout
+
+block content
+  .row.justify-content-center
+    .col-md-8
+      .card
+        .card-header.bg-primary.text-white
+          h3.mb-0
+            i.bi.bi-pencil.me-2
+            | Editar Categoria
+        .card-body
+          if error
+            .alert.alert-danger
+              i.bi.bi-exclamation-triangle.me-2
+              = error
+          
+          if category
+            form(method='POST', action=`/admin/categories/${category._id}/edit`)
+              .mb-4
+                label.form-label(for='name') Nome da Categoria *
+                input.form-control(type='text', id='name', name='name', required, value=category.name)
+                .form-text O nome deve ser único no sistema
+              
+              .mb-4
+                label.form-label(for='description') Descrição
+                textarea.form-control(id='description', name='description', rows='3', placeholder='Descreva o propósito desta categoria...')= category.description || ''
+                .form-text Opcional: ajuda os utilizadores a entender o uso da categoria
+              
+              .mb-4
+                label.form-label(for='parent') Categoria Pai
+                select.form-control(id='parent', name='parent')
+                  option(value='') Categoria principal (sem pai)
+                  if categories && categories.length > 0
+                    each cat in categories
+                      option(value=cat._id, selected=category.parent && category.parent._id === cat._id)= cat.name
+                .form-text Deixe vazio para categoria principal
+              
+              .d-flex.justify-content-between
+                .btn-group
+                  a.btn.btn-secondary(href='/admin/categories') 
+                    i.bi.bi-arrow-left.me-1
+                    | Cancelar
+                  a.btn.btn-outline-info(href=`/categories/${category._id}`) 
+                    i.bi.bi-eye.me-1
+                    | Ver Items
+                
+                .btn-group
+                  button.btn.btn-outline-danger(type='button', onclick=`confirmDelete('${category._id}', '${category.name}')`) 
+                    i.bi.bi-trash.me-1
+                    | Eliminar
+                  button.btn.btn-primary(type='submit') 
+                    i.bi.bi-check.me-1
+                    | Guardar Alterações
+          else
+            .alert.alert-danger.text-center
+              h4 Categoria não encontrada
+              p A categoria que está a tentar editar não existe.
+              a.btn.btn-primary(href='/admin/categories') Voltar às Categorias
+
+  script.
+    function confirmDelete(categoryId, categoryName) {
+      if (confirm(`Eliminar a categoria "${categoryName}"?\n\nEsta ação irá remover a categoria e desassociar todos os items relacionados.\n\nEsta ação não pode ser desfeita.`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/admin/categories/${categoryId}/delete`;
+        document.body.appendChild(form);
+        form.submit();
+      }
+    }

@@ -2,53 +2,117 @@ extends ../layout
 
 block content
   if category
-    .d-flex.justify-content-between.align-items-center.mb-4
-      div
-        h1 
-          i.bi.bi-folder.me-2
-          = category.name
+    // Header da categoria
+    .card.mb-4.bg-primary.text-white
+      .card-body.text-center
+        i.bi.bi-folder.display-4.mb-3
+        h1.mb-2= category.name
         if category.description
-          p.text-muted= category.description
-      a.btn.btn-outline-primary(href='/categories') Todas as Categorias
+          p.lead.mb-0= category.description
+        else
+          p.lead.mb-0 Categoria sem descrição
 
+    // Navegação
+    .d-flex.justify-content-between.align-items-center.mb-4
+      nav(aria-label='breadcrumb')
+        ol.breadcrumb.mb-0
+          li.breadcrumb-item
+            a(href='/categories') Categorias
+          li.breadcrumb-item.active(aria-current='page')= category.name
+      
+      .btn-group
+        if user
+          a.btn.btn-success(href='/items/new') 
+            i.bi.bi-plus.me-1
+            | Novo Item
+        a.btn.btn-outline-secondary(href='/categories') 
+          i.bi.bi-arrow-left.me-1
+          | Voltar
+
+    // Estatísticas
+    .row.mb-4
+      .col-md-4
+        .card.text-center.bg-info.text-white
+          .card-body
+            h2= items ? items.length : 0
+            p.mb-0 Total de Items
+      .col-md-4
+        .card.text-center.bg-success.text-white
+          .card-body
+            h2= items ? items.filter(i => i.type === 'photo').length : 0
+            p.mb-0 Fotos
+      .col-md-4
+        .card.text-center.bg-warning.text-white
+          .card-body
+            h2= items ? items.filter(i => i.type === 'document').length : 0
+            p.mb-0 Documentos
+
+    // Lista de items
     if items && items.length > 0
       .row
         each item in items
-          .col-md-6.col-lg-4.mb-3
-            .card.h-100
-              .card-header.d-flex.justify-content-between.align-items-center
-                h6.mb-0= item.title
-                span.badge(class=item.type === 'zip' ? 'bg-info' : 'bg-secondary')= item.type
+          .col-md-6.col-lg-4.mb-4
+            .card.h-100.shadow-sm
+              .card-header.bg-light
+                .d-flex.justify-content-between.align-items-center
+                  h6.mb-0.text-truncate= item.title
+                  span.badge(class=item.type === 'photo' ? 'bg-info' : item.type === 'document' ? 'bg-secondary' : item.type === 'zip' ? 'bg-warning' : 'bg-primary')= item.type
               
               .card-body
                 if item.description
                   p.card-text= item.description.length > 100 ? item.description.substring(0, 100) + '...' : item.description
                 else
-                  p.text-muted.card-text Sem descrição
+                  p.text-muted.card-text.fst-italic Sem descrição
+                
+                .row.small.text-muted.mb-3
+                  .col-6
+                    i.bi.bi-person.me-1
+                    = item.producer
+                  .col-6
+                    i.bi.bi-calendar.me-1
+                    = new Date(item.createdAt).toLocaleDateString('pt-PT')
                 
                 if item.tags && item.tags.length > 0
-                  .mb-2
-                    each tag in item.tags.slice(0, 3)
-                      span.badge.bg-light.text-dark.me-1= tag
-                    if item.tags.length > 3
-                      span.text-muted +#{item.tags.length - 3} mais
-                
-                .d-flex.justify-content-between.align-items-center.mt-auto
-                  small.text-muted= new Date(item.createdAt).toLocaleDateString('pt-PT')
-                  a.btn.btn-primary.btn-sm(href=`/items/${item._id}`) Ver
+                  .mb-3
+                    each tag in item.tags.slice(0, 2)
+                      span.badge.bg-light.text-dark.me-1.small= tag
+                    if item.tags.length > 2
+                      span.text-muted.small +#{item.tags.length - 2} mais
+              
+              .card-footer.bg-transparent
+                .d-flex.justify-content-between.align-items-center
+                  small.text-muted
+                    i.bi.bi-person-circle.me-1
+                    = item.submitter.name
+                  a.btn.btn-primary.btn-sm(href=`/items/${item._id}`) 
+                    i.bi.bi-eye.me-1
+                    | Ver Detalhes
     else
-      .alert.alert-info.text-center
+      .alert.alert-info.text-center.py-5
+        i.bi.bi-inbox.display-1.text-muted.mb-3
         h4 Nenhum item nesta categoria
-        p Esta categoria ainda não tem conteúdos associados.
+        p.text-muted Esta categoria ainda não tem conteúdos associados.
         if user
-          a.btn.btn-primary(href='/items/new') Criar Primeiro Item
+          a.btn.btn-primary(href='/items/new') 
+            i.bi.bi-plus.me-1
+            | Criar Primeiro Item
 
+    // Informação adicional sobre a categoria
     if category.parent
       .mt-4
-        .alert.alert-light
-          i.bi.bi-info-circle.me-2
-          | Esta é uma subcategoria de 
-          a(href=`/categories/${category.parent._id}`)= category.parent.name
+        .alert.alert-light.border-start.border-primary.border-4
+          .d-flex.align-items-center
+            i.bi.bi-info-circle.text-primary.me-2
+            div
+              strong Subcategoria
+              p.mb-0 Esta é uma subcategoria de 
+                a.fw-bold(href=`/categories/${category.parent._id}`)= category.parent.name
 
   else
-    .alert.alert-danger Categoria não encontrada
+    .alert.alert-danger.text-center.py-5
+      i.bi.bi-exclamation-triangle.display-1.text-danger.mb-3
+      h4 Categoria não encontrada
+      p A categoria que procura não existe ou foi removida.
+      a.btn.btn-primary(href='/categories') 
+        i.bi.bi-arrow-left.me-1
+        | Voltar às Categorias

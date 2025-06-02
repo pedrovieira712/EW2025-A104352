@@ -31,7 +31,7 @@ router.post("/", requireAuth, (req, res, next) => {
     .post(API_URL + "/comment", commentData, config)
     .then((resp) => {
       console.log("Comentário criado com sucesso")
-      res.redirect("/items/" + req.body.itemId)
+      res.redirect("/items/" + req.body.itemId + "?success=Comentário adicionado com sucesso")
     })
     .catch((erro) => {
       console.error("Erro ao criar comentário:", erro.response?.data || erro.message)
@@ -49,7 +49,7 @@ router.post("/:id/delete", requireAuth, (req, res, next) => {
   axios
     .delete(API_URL + "/comment/" + id, config)
     .then((resp) => {
-      res.redirect("/items/" + req.body.itemId)
+      res.redirect("/items/" + req.body.itemId + "?success=Comentário eliminado com sucesso")
     })
     .catch((erro) => {
       console.error("Erro ao eliminar comentário:", erro)

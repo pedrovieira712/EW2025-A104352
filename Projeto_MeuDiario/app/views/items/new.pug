@@ -9,12 +9,15 @@ block content
             i.bi.bi-plus-circle.me-2
             | Criar Novo Item
         .card-body
-          form(method='POST', action='/items/new')
+          if error
+            .alert.alert-danger= error
+          
+          form(method='POST', action='/items/new', enctype='multipart/form-data')
             .row
               .col-md-6
                 .mb-3
                   label.form-label(for='title') Título *
-                  input.form-control(type='text', id='title', name='title', required)
+                  input.form-control(type='text', id='title', name='title', required, placeholder='Ex: Viagem a Paris')
                 
                 .mb-3
                   label.form-label(for='type') Tipo *
@@ -24,15 +27,6 @@ block content
                     option(value='document') Documento
                     option(value='text') Texto
                     option(value='mixed') Misto
-                    option(value='other') Outro
-                
-                .mb-3
-                  label.form-label(for='category') Categoria
-                  select.form-control(id='category', name='category')
-                    option(value='') Sem categoria
-                    if categories
-                      each category in categories
-                        option(value=category._id)= category.name
                 
                 .mb-3
                   label.form-label(for='producer') Produtor *
@@ -50,24 +44,85 @@ block content
                     label.form-check-label(for='isPublic') Tornar público
                 
                 .mb-3
-                  label.form-label(for='tags') Tags (separadas por vírgula)
-                  input.form-control(type='text', id='tags', name='tags', placeholder='viagem, paris, férias')
-                
-                .mb-3
-                  label.form-label(for='location') Localização
-                  input.form-control(type='text', id='location', name='location', placeholder='Paris, França')
+                  label.form-label(for='category') Categoria
+                  select.form-control(id='category', name='category')
+                    option(value='') Sem categoria
+                    if categories
+                      each category in categories
+                        option(value=category._id)= category.name
             
             .mb-3
               label.form-label(for='description') Descrição
-              textarea.form-control(id='description', name='description', rows='4', placeholder='Descreva o conteúdo...')
+              textarea.form-control(id='description', name='description', rows='3', placeholder='Descreva o conteúdo...')
             
-            .alert.alert-info
-              i.bi.bi-info-circle.me-2
-              strong Nota: 
-              | Este formulário cria apenas o item. Para adicionar ficheiros, use o sistema de upload SIP ou edite o item após criação.
+            .mb-3
+              label.form-label(for='tags') Tags (separadas por vírgula)
+              input.form-control(type='text', id='tags', name='tags', placeholder='viagem, paris, férias')
+            
+            // Seção de upload de arquivos
+            .mb-4
+              label.form-label 
+                i.bi.bi-paperclip.me-2
+                | Adicionar Arquivos
+              .border.rounded.p-3.bg-light
+                .mb-3
+                  input.form-control(type='file', id='files', name='files', multiple, accept='image/*,application/pdf,.doc,.docx,.txt')
+                  .form-text Selecione um ou mais arquivos (imagens, PDFs, documentos)
+                
+                #filePreview.mt-3(style='display: none;')
+                  h6 Arquivos selecionados:
+                  #fileList
             
             .d-flex.justify-content-between
               a.btn.btn-secondary(href='/items/dashboard') Cancelar
               button.btn.btn-primary(type='submit') 
                 i.bi.bi-check.me-1
                 | Criar Item
+
+  script.
+    // Preview dos arquivos selecionados
+    document.getElementById('files').addEventListener('change', function(e) {
+      const files = e.target.files;
+      const preview = document.getElementById('filePreview');
+      const fileList = document.getElementById('fileList');
+      
+      if (files.length > 0) {
+        preview.style.display = 'block';
+        fileList.innerHTML = '';
+        
+        Array.from(files).forEach((file, index) => {
+          const fileItem = document.createElement('div');
+          fileItem.className = 'alert alert-info py-2 mb-2';
+          fileItem.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <i class="bi bi-file-earmark me-2"></i>
+                <strong>${file.name}</strong>
+                <small class="text-muted ms-2">(${(file.size / 1024).toFixed(1)} KB)</small>
+              </div>
+              <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeFile(${index})">
+                <i class="bi bi-x"></i>
+              </button>
+            </div>
+          `;
+          fileList.appendChild(fileItem);
+        });
+      } else {
+        preview.style.display = 'none';
+      }
+    });
+    
+    function removeFile(index) {
+      const fileInput = document.getElementById('files');
+      const dt = new DataTransfer();
+      const files = fileInput.files;
+      
+      for (let i = 0; i < files.length; i++) {
+        if (i !== index) {
+          dt.items.add(files[i]);
+        }
+      }
+      
+      fileInput.files = dt.files;
+      fileInput.dispatchEvent(new Event('change'));
+    }
