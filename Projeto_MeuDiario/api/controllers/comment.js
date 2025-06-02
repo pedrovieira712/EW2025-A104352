@@ -1,6 +1,7 @@
 var Comment = require("../models/comment")
 var Item = require("../models/item")
 var Log = require("../controllers/log")
+var User = require("../models/user")
 
 // Listar todos os comentários
 module.exports.list = () => {
@@ -30,7 +31,11 @@ module.exports.create = async (commentData, ip) => {
       throw new Error("Item não encontrado")
     }
 
-    const canComment = item.isPublic || commentData.userId === item.submitter._id.toString() || commentData.isAdmin
+    // Verificar se o userId é de um admin
+    const isAdmin = await User.findById(commentData.userId).select("isAdmin")
+
+
+    const canComment = item.isPublic || isAdmin.isAdmin || commentData.userId === item.submitter._id.toString()
 
     if (!canComment) {
       throw new Error("Não tem permissão para comentar neste item privado")
@@ -83,24 +88,25 @@ module.exports.delete = async (id, userId, ip, isAdmin = false) => {
 }
 
 // Listar comentários por item (com controlo de visibilidade)
-module.exports.listByItem = async (itemId, userId = null, isAdmin = false) => {
+module.exports.listByItem = async (itemId) => {
   try {
-    // Verificar se o item existe e se o usuário pode ver os comentários
-    const item = await Item.findById(itemId).populate("submitter")
+    console.log("Comentaios de:", itemId)
+
+    // Verificar se o item existe
+    const item = await Item.findById(itemId)
     if (!item) {
       throw new Error("Item não encontrado")
     }
 
-    const canViewComments = item.isPublic || (userId && userId === item.submitter._id.toString()) || isAdmin
-
-    if (!canViewComments) {
-      return [] // Retorna array vazio se não pode ver
-    }
-
-    return Comment.find({ itemId: itemId })
+    // Buscar TODOS os comentários do item (sem controlo de visibilidade)
+    const comments = await Comment.find({ itemId: itemId })
       .populate("userId", "username name")
       .sort({ createdAt: 1 }) // Ordem cronológica
       .exec()
+
+    console.log("#Comentarios:", comments.length)
+
+    return comments
   } catch (error) {
     console.error("Erro ao listar comentários:", error)
     throw error

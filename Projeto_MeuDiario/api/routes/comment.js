@@ -64,7 +64,7 @@ router.delete("/:_id", auth, (req, res) => {
 router.get("/item/:itemId", (req, res) => {
   Comment.listByItem(req.params.itemId)
     .then((data) => {res.status(200).jsonp(data)})
-    .catch((error) => res.status(500).jsonp(error))
+    .catch((error) => {res.status(500).jsonp({ error: error.message })})
 })
 
 // GET /comments/user/:userId - comentários por utilizador
