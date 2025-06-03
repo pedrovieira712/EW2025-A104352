@@ -74,10 +74,10 @@ if (isGoogleConfigured) {
           })
 
           const savedUser = await newUser.save()
-          console.log("✅ New user created:", savedUser.username)
+          console.log("New user created:", savedUser.username)
           return done(null, savedUser)
         } catch (err) {
-          console.error("❌ Error in Google strategy:", err)
+          console.error("Error in Google strategy:", err)
           return done(err, null)
         }
       },

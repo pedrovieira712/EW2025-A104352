@@ -7,88 +7,87 @@ var Log = require("../models/log")
 
 // Processar SIP (pacote ZIP)
 module.exports.processSIP = async (req, res) => {
-  console.log("🚀 Iniciando processamento SIP...")
+  console.log("Iniciando processamento SIP...")
 
   try {
     if (!req.file) {
-      console.error("❌ Nenhum ficheiro ZIP enviado")
+      console.error("Nenhum ficheiro ZIP enviado")
       return res.status(400).jsonp({ error: "Nenhum ficheiro ZIP enviado" })
     }
 
-    console.log("📦 Processando SIP:", req.file.filename)
-    console.log("📊 Tamanho do ficheiro:", req.file.size, "bytes")
+    console.log("Processando SIP:", req.file.filename)
+    console.log("Tamanho do ficheiro:", req.file.size, "bytes")
 
     // 1. Verificar se o ficheiro existe
     const zipPath = req.file.path
     if (!fs.existsSync(zipPath)) {
-      console.error("❌ Ficheiro ZIP não encontrado:", zipPath)
+      console.error("Ficheiro ZIP não encontrado:", zipPath)
       return res.status(400).jsonp({ error: "Ficheiro ZIP não encontrado" })
     }
 
     // 2. Extrair ZIP
     const extractPath = path.join("uploads/temp", "extract_" + Date.now())
-    console.log("📂 Extraindo para:", extractPath)
+    console.log("Extraindo para:", extractPath)
 
     try {
       const zip = new AdmZip(zipPath)
       const entries = zip.getEntries()
       console.log(
-        "📋 Ficheiros no ZIP:",
+        "Ficheiros no ZIP:",
         entries.map((e) => e.entryName),
       )
 
       zip.extractAllTo(extractPath, true)
-      console.log("✅ ZIP extraído com sucesso")
+      console.log("ZIP extraído com sucesso")
     } catch (extractError) {
-      console.error("❌ Erro ao extrair ZIP:", extractError.message)
+      console.error("Erro ao extrair ZIP:", extractError.message)
       cleanupTemp(zipPath, extractPath)
       return res.status(400).jsonp({ error: "Erro ao extrair ZIP: " + extractError.message })
     }
 
     // 3. Procurar manifesto
-    console.log("🔍 Procurando manifesto...")
+    console.log("Procurando manifesto...")
     const manifestPath = findManifest(extractPath)
     if (!manifestPath) {
-      console.error("❌ Manifesto não encontrado")
+      console.error("Manifesto não encontrado")
       cleanupTemp(zipPath, extractPath)
       return res.status(400).jsonp({
         error: "Manifesto não encontrado. Deve existir um ficheiro 'manifesto-SIP.json' na raiz do ZIP",
       })
     }
-    console.log("✅ Manifesto encontrado:", manifestPath)
 
     // 4. Ler e validar manifesto
-    console.log("📖 Lendo manifesto...")
+    console.log("Lendo manifesto...")
     const manifest = readManifest(manifestPath)
     if (!manifest) {
-      console.error("❌ Erro ao ler manifesto")
+      console.error("Erro ao ler manifesto")
       cleanupTemp(zipPath, extractPath)
       return res.status(400).jsonp({ error: "Erro ao ler manifesto. Verifique se é um JSON válido." })
     }
-    console.log("✅ Manifesto lido:", JSON.stringify(manifest, null, 2))
+    console.log("Manifesto lido:", JSON.stringify(manifest, null, 2))
 
     // 5. Validar campos obrigatórios do manifesto
     const validationError = validateManifest(manifest)
     if (validationError) {
-      console.error("❌ Manifesto inválido:", validationError)
+      console.error("Manifesto inválido:", validationError)
       cleanupTemp(zipPath, extractPath)
       return res.status(400).jsonp({ error: validationError })
     }
 
     // 6. Validar ficheiros referenciados
-    console.log("🔍 Validando ficheiros...")
+    console.log("Validando ficheiros...")
     const validationResult = validateFiles(extractPath, manifest)
     if (!validationResult.valid) {
-      console.error("❌ Ficheiros em falta:", validationResult.missing)
+      console.error("Ficheiros em falta:", validationResult.missing)
       cleanupTemp(zipPath, extractPath)
       return res.status(400).jsonp({
         error: "Ficheiros em falta: " + validationResult.missing.join(", "),
       })
     }
-    console.log("✅ Todos os ficheiros encontrados")
+    console.log("Todos os ficheiros encontrados")
 
     // 7. Criar item na BD
-    console.log("💾 Criando item na base de dados...")
+    console.log("Criando item na base de dados...")
     const itemData = {
       title: manifest.title,
       description: manifest.description || "",
@@ -104,12 +103,11 @@ module.exports.processSIP = async (req, res) => {
 
     const item = new Item(itemData)
     const savedItem = await item.save()
-    console.log("✅ Item criado:", savedItem._id)
+    console.log("Item criado:", savedItem._id)
 
     // 8. Processar e mover ficheiros
-    console.log("📁 Processando ficheiros...")
     const processedFiles = await processFiles(extractPath, manifest, savedItem._id)
-    console.log("✅ Ficheiros processados:", processedFiles.length)
+    console.log("Ficheiros processados:", processedFiles.length)
 
     // 9. Atualizar item com ficheiros
     savedItem.files = processedFiles.map((f) => f._id)
@@ -125,14 +123,13 @@ module.exports.processSIP = async (req, res) => {
     cleanupTemp(zipPath, extractPath)
 
     // 12. Resposta
-    console.log("🎉 SIP processado com sucesso!")
     res.status(201).jsonp({
       message: "SIP processado com sucesso",
       item: savedItem,
       files: processedFiles,
     })
   } catch (error) {
-    console.error("💥 Erro geral ao processar SIP:", error)
+    console.error("Erro geral ao processar SIP:", error)
     res.status(500).jsonp({ error: "Erro interno: " + error.message })
   }
 }
@@ -208,48 +205,44 @@ module.exports.exportDIP = async (req, res) => {
 function findManifest(extractPath) {
   const possibleNames = ["manifesto-SIP.json", "manifesto-SIP.xml"]
 
-  console.log("🔍 Procurando manifesto em:", extractPath)
+  console.log("Procurando manifesto em:", extractPath)
 
   // Listar todos os ficheiros no diretório
   try {
     const files = fs.readdirSync(extractPath)
-    console.log("📁 Ficheiros encontrados:", files)
+    console.log("Ficheiros encontrados:", files)
   } catch (error) {
-    console.error("❌ Erro ao ler diretório:", error.message)
+    console.error("Erro ao ler diretório:", error.message)
     return null
   }
 
   for (const name of possibleNames) {
     const fullPath = path.join(extractPath, name)
-    console.log("🔍 Verificando:", fullPath)
+    console.log("Verificando:", fullPath)
     if (fs.existsSync(fullPath)) {
-      console.log("✅ Manifesto encontrado:", fullPath)
+      console.log("Manifesto encontrado:", fullPath)
       return fullPath
     }
   }
 
-  console.log("❌ Nenhum manifesto encontrado")
+  console.log("Nenhum manifesto encontrado")
   return null
 }
 
 // Ler manifesto (JSON ou XML)
 function readManifest(manifestPath) {
   try {
-    console.log("📖 Lendo manifesto:", manifestPath)
+    console.log("Lendo manifesto:", manifestPath)
     const content = fs.readFileSync(manifestPath, "utf8")
-    console.log("📄 Conteúdo do manifesto:", content)
+    console.log("Conteúdo do manifesto:", content)
 
     if (manifestPath.endsWith(".json")) {
       const parsed = JSON.parse(content)
-      console.log("✅ JSON parseado com sucesso")
+      console.log("JSON parseado com sucesso")
       return parsed
-    } else if (manifestPath.endsWith(".xml")) {
-      // Para XML, seria necessário um parser (xml2js)
-      console.error("❌ Suporte XML não implementado ainda")
-      throw new Error("Suporte XML não implementado ainda")
-    }
+    } 
   } catch (error) {
-    console.error("❌ Erro ao ler manifesto:", error.message)
+    console.error("Erro ao ler manifesto:", error.message)
     return null
   }
 }
@@ -272,22 +265,21 @@ function validateFiles(extractPath, manifest) {
   const missing = []
 
   if (manifest.files && Array.isArray(manifest.files)) {
-    console.log("🔍 Validando", manifest.files.length, "ficheiros...")
+    console.log("Validando", manifest.files.length, "ficheiros...")
 
     for (const fileRef of manifest.files) {
       const filename = fileRef.filename || fileRef
       const filePath = path.join(extractPath, filename)
-      console.log("🔍 Verificando ficheiro:", filePath)
 
       if (!fs.existsSync(filePath)) {
-        console.log("❌ Ficheiro em falta:", filename)
+        console.log("Ficheiro em falta:", filename)
         missing.push(filename)
       } else {
-        console.log("✅ Ficheiro encontrado:", filename)
+        console.log("Ficheiro encontrado:", filename)
       }
     }
   } else {
-    console.log("ℹ️ Nenhum ficheiro referenciado no manifesto")
+    console.log("Nenhum ficheiro referenciado no manifesto")
   }
 
   return {
@@ -301,7 +293,7 @@ async function processFiles(extractPath, manifest, itemId) {
   const processedFiles = []
 
   if (!manifest.files || !Array.isArray(manifest.files)) {
-    console.log("ℹ️ Nenhum ficheiro para processar")
+    console.log("Nenhum ficheiro para processar")
     return processedFiles
   }
 
@@ -309,7 +301,7 @@ async function processFiles(extractPath, manifest, itemId) {
   const itemDir = path.join("uploads/files", itemId.toString())
   if (!fs.existsSync(itemDir)) {
     fs.mkdirSync(itemDir, { recursive: true })
-    console.log("📁 Diretório criado:", itemDir)
+    console.log("Diretório criado:", itemDir)
   }
 
   for (const fileRef of manifest.files) {
@@ -318,7 +310,7 @@ async function processFiles(extractPath, manifest, itemId) {
       const sourcePath = path.join(extractPath, filename)
       const destPath = path.join(itemDir, filename)
 
-      console.log("📁 Movendo ficheiro:", filename)
+      console.log("Movendo ficheiro:", filename)
 
       // Copiar ficheiro
       fs.copyFileSync(sourcePath, destPath)
@@ -344,9 +336,9 @@ async function processFiles(extractPath, manifest, itemId) {
       const savedFile = await file.save()
       processedFiles.push(savedFile)
 
-      console.log("✅ Ficheiro processado:", filename)
+      console.log("Ficheiro processado:", filename)
     } catch (error) {
-      console.error("❌ Erro ao processar ficheiro:", fileRef.filename || fileRef, error.message)
+      console.error("Erro ao processar ficheiro:", fileRef.filename || fileRef, error.message)
     }
   }
 
@@ -399,10 +391,10 @@ function cleanupTemp(zipPath, extractPath) {
     // Remover diretório extraído
     if (fs.existsSync(extractPath)) {
       fs.rmSync(extractPath, { recursive: true, force: true })
-      console.log("🗑️ Diretório temporário removido")
+      console.log("Diretório temporário removido")
     }
   } catch (error) {
-    console.error("⚠️ Erro ao limpar ficheiros temporários:", error.message)
+    console.error("Erro ao limpar ficheiros temporários:", error.message)
   }
 }
 
@@ -417,8 +409,8 @@ async function logActivity(action, itemId, userId, ip, details) {
       details: details,
     })
     await log.save()
-    console.log("📝 Log registado:", action)
+    console.log("Log registado:", action)
   } catch (error) {
-    console.error("⚠️ Erro ao registar log:", error.message)
+    console.error("Erro ao registar log:", error.message)
   }
 }
